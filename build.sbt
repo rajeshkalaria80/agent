@@ -7,14 +7,13 @@ import sbt.classpath.ClasspathUtilities
 import sbtassembly.AssemblyKeys.assemblyMergeStrategy
 import sbtassembly.MergeStrategy
 
-enablePlugins(JavaAppPackaging)
 
 val major = "0"
 val minor = "4"
 val patch = "0"
 val preReleaseWithPrefix = ""
 
-val jar_version = "0.1"
+val jarVersion = "0.1"
 
 val akka = "2.5.18"
 val akka_http = "10.1.5"
@@ -26,7 +25,7 @@ val dispatchVersion = "0.13.1"
 lazy val allConfFiles = Set("application.conf")
 
 lazy val commonSettings = Seq(
-  version := jar_version,
+  version := jarVersion,
   organization := "com.evernym",
   scalaVersion := "2.12.2",
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8", "-Xmax-classfile-name", "128"),
@@ -53,7 +52,6 @@ def commonTestSettings(projectName: String) = Seq (
   ),
   PB.protoSources in Test := Seq(file("core-agent/src/test/protobuf"))
 )
-
 
 lazy val commonLibraryDependencies = {
 
@@ -172,24 +170,22 @@ def commonPackageSettings(targetRootPath: String) = Seq (
   maintainer := "Evernym Inc <dev@evernym.com>",
   packageName := name.value,
   version := getVersion(git.gitHeadCommitDate.value.get, git.gitHeadCommit.value.get),
-//  linuxPackageMappings += {
-//    val pName = name.value
-//    val basePackageMapping = Seq(
-//      (assembly.value, s"/usr/lib/$pName/$pName-assembly.jar"),
-//      (baseDirectory.value / "src" / "main" / "resources" / "systemd" / "systemd.service",
-//        s"/usr/lib/systemd/system/${packageName.value}.service")
-//    )
-//    val dependencies = (externalDependencyClasspath in assembly).value
-//    val extraJarDepMapping = getNonAssemblyJarFileMapping(pName, dependencies)
-//    packageMapping(basePackageMapping: _*)
-//  },
-//  linuxPackageMappings += {
-//    buildPackageMappings(s"core-agent/src/main/resources/$dprDirPath",
-//      s"$targetRootPath/${packageName.value}",
-//      includeFiles = allConfFiles, replaceFilesIfExists = true)
-//  },
-  //libindy provides libindy.so
-  debianPackageDependencies in Debian ++= Seq("default-jre", "libindy(>= 1.6.8)"),
+  linuxPackageMappings += {
+    val pName = name.value
+    val basePackageMapping = Seq(
+      (assembly.value, s"/usr/lib/$pName/$pName-assembly.jar"),
+      (baseDirectory.value / "src" / "main" / "resources" / "systemd" / "systemd.service",
+        s"/usr/lib/systemd/system/${packageName.value}.service")
+    )
+    val dependencies = (externalDependencyClasspath in assembly).value
+    val extraJarDepMapping = getNonAssemblyJarFileMapping(pName, dependencies)
+    packageMapping(basePackageMapping ++ extraJarDepMapping: _*)
+  },
+  linuxPackageMappings += {
+    buildPackageMappings(s"core-agent/src/main/resources/$dprDirPath",
+      s"$targetRootPath/${packageName.value}",
+      includeFiles = allConfFiles, replaceFilesIfExists = true)
+  },
   publishDeb := {
     val artifact = target.value + "/" + name.value + "_" + version.value + "_all.deb"
     val code = ("sh upload_deb.sh " + artifact !)
@@ -200,20 +196,33 @@ def commonPackageSettings(targetRootPath: String) = Seq (
   }
 )
 
-
-lazy val coreAgent = (project in file("core-agent")).
+lazy val api = (project in file("api")).
+  enablePlugins(DebianPlugin).
   settings(
-    name := "core-agent",
-    packageSummary := "core agent",
-    packageDescription := "Scala and Akka package to run cloud agents",
-    libraryDependencies ++= commonLibraryDependencies,
+    name := "api",
+    packageSummary := "api",
     commonSettings,
-    commonPackageSettings(s"$targetDirPathPrefix"),
-    commonTestSettings("core-agent")
+    commonPackageSettings(s"$targetDirPathPrefix")
   )
 
 
-lazy val agent = project.in(file(".")).aggregate(coreAgent)
+lazy val coreAgent = (project in file("core-agent")).
+  enablePlugins(DebianPlugin).
+  settings(
+    name := "core-agent",
+    packageSummary := "core-agent",
+    packageDescription := "Scala and Akka package to run core agent",
+    libraryDependencies ++= commonLibraryDependencies,
+    commonTestSettings("core-agent"),
+    commonSettings,
+    commonPackageSettings(s"$targetDirPathPrefix"),
+    //libindy provides libindy.so
+    debianPackageDependencies in Debian ++= Seq("default-jre", "libindy(>= 1.6.8)")
+  ).dependsOn(api % "test->test; compile->compile")
+
+
+
+lazy val agent = project.in(file(".")).aggregate(api, coreAgent)
 
 Revolver.settings
 
