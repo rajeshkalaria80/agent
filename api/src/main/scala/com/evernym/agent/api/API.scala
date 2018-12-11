@@ -1,6 +1,6 @@
 package com.evernym.agent.api
 
-import java.util.jar.Manifest
+import java.io.{File, FilenameFilter}
 
 import scala.concurrent.Future
 
@@ -34,38 +34,37 @@ trait Transport {
 case class MsgType(name: String, version: String)
 
 
+trait ExtensionParam
+
 trait Extension extends MsgHandler {
   def config: ConfigProvider
   def name: String                                  //unique name of the extension
   def category: String                              //category (or type) of the extension
   def displayName: Option[String] = None
   final def getDisplayName: String = displayName.getOrElse(name)
-
+  def apply(): Extension
 }
 
 trait TransportExtension extends Transport with Extension
 
 
-trait ExtensionParam
+trait ExtensionFilter extends FilenameFilter {
+  def fileExtension: String
 
+  override def accept(dir: File, name: String): Boolean = {
+    name.endsWith(s"$fileExtension")
+  }
 
-trait ExtensionWrapper {
-  def manifest: Manifest
-  def getSupportedMsgTypes: Set[MsgType]
-
-  def create(param: ExtensionParam): Extension
 }
-
 
 trait ExtensionManager {
 
-  def load(dirPaths: Set[String]): Map[String, ExtensionWrapper]
-  def getLoaded: Map[String, ExtensionWrapper]
+  def load(dirPaths: Set[String], filter: ExtensionFilter): Unit
 
-  def activate(name: String, param: ExtensionParam): Unit
-  def deactivate(name: String): Unit
+  def getLoadedNames: Set[String]
 
-  def getActivatedExtension: Map[String, Extension]
+  def getSupportedMsgTypes(name: String): Set[MsgType]
 
+  def createExtension(name: String, param: Option[ExtensionParam] = None): Extension
 }
 

@@ -44,8 +44,8 @@ trait TransportHttpAkkaRouteParam extends TransportParam {
     def route: Route
   }
   def routes: List[RouteDetail]
-
 }
+
 
 case class AgentBaseParam(config: ConfigProvider, actorSystem: ActorSystem,
                           materializer: Materializer)

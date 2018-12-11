@@ -9,7 +9,7 @@ import sbtassembly.MergeStrategy
 
 
 val major = "0"
-val minor = "4"
+val minor = "0"
 val patch = "0"
 val preReleaseWithPrefix = ""
 
@@ -128,7 +128,8 @@ def getBuildMetadataWithPrefix(commitDate:String, commitHash:String) : String = 
 
 def getVersion(commitDate:String, commitHash:String) : String = {
   val buildMetadataWithPrefix = getBuildMetadataWithPrefix(commitDate, commitHash)
-  s"$major.$minor.$patch$preReleaseWithPrefix$buildMetadataWithPrefix"
+  //s"$major.$minor.$patch$preReleaseWithPrefix$buildMetadataWithPrefix"
+  s"$major.$minor.$patch"
 }
 
 def buildPackageMappings(
