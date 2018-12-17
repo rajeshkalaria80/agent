@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.Directives.{complete, logRequestResult, options
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive0, Route}
 import akka.stream.Materializer
-import com.evernym.agent.api.{ConfigProvider, MsgOrchestrator, Transport, TransportParam}
+import com.evernym.agent.api._
 
 
 trait CorsSupport {
@@ -35,25 +35,6 @@ trait CorsSupport {
   def corsHandler(r: Route): Route = addAccessControlHeaders() {
     preFlightRequestHandler ~ r
   }
-}
-
-
-trait TransportHttpAkkaRouteParam extends TransportParam {
-  trait RouteDetail {
-    def order: Int
-    def route: Route
-  }
-  def routes: List[RouteDetail]
-}
-
-
-case class AgentBaseParam(config: ConfigProvider, actorSystem: ActorSystem,
-                          materializer: Materializer)
-
-
-trait TransportHttpAkka extends Transport {
-  override def param: TransportHttpAkkaRouteParam
-  def agentBaseParam: AgentBaseParam
 }
 
 class DefaultTransportParamHttpAkka(val config: ConfigProvider, val msgOrchestrator: MsgOrchestrator)
@@ -92,21 +73,24 @@ class DefaultTransportParamHttpAkka(val config: ConfigProvider, val msgOrchestra
   )
 }
 
-class DefaultTransportAkkaHttp (val param: TransportHttpAkkaRouteParam)
-                               (implicit
-                                val agentBaseParam: AgentBaseParam)
-  extends TransportHttpAkka with CorsSupport {
 
-  implicit def config: ConfigProvider = agentBaseParam.config
-  implicit def system: ActorSystem = agentBaseParam.actorSystem
-  implicit def materializer: Materializer = agentBaseParam.materializer
+class DefaultTransportAkkaHttp(val commonParam: CommonParam, val routeParam: TransportHttpAkkaRouteParam)
+  extends Transport with CorsSupport {
 
-  override def activate(): Unit = {
-    val route: Route = param.routes.sortBy(_.order).map(_.route).reduce(_ ~ _)
+  implicit val name: String = "akka-http"
+  implicit val category: String = "transport"
+
+
+  implicit def config: ConfigProvider = commonParam.config
+  implicit def system: ActorSystem = commonParam.actorSystem
+  implicit def materializer: Materializer = commonParam.materializer
+
+  override def start(): Unit = {
+    val route: Route = routeParam.routes.sortBy(_.order).map(_.route).reduce(_ ~ _)
     Http().bindAndHandle(corsHandler(route), "0.0.0.0", 6000)
   }
 
-  override def deactivate(): Unit = {
+  override def stop(): Unit = {
     //
   }
 }

@@ -1,8 +1,7 @@
 package com.evernym.agent.core_agent.agent
 
 
-import com.evernym.agent.api.{AgentMsgHandler, Msg}
-import com.evernym.agent.core_agent.transport.http.akka.AgentBaseParam
+import com.evernym.agent.api.{AgentMsgHandler, CommonParam, Msg}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -13,7 +12,7 @@ trait RoutingAgent {
   def routeMsgToAgent(toId: String, msg: Msg): Future[Any]
 }
 
-class DefaultRoutingAgent(val param: AgentBaseParam) extends RoutingAgent {
+class DefaultRoutingAgent(val param: CommonParam) extends RoutingAgent {
 
   //it will be simple key value storage, may not be very efficient as it has to only support
   // one main agent actor and their pairwise actors info
@@ -31,7 +30,7 @@ class DefaultRoutingAgent(val param: AgentBaseParam) extends RoutingAgent {
   }
 }
 
-class DefaultAgentMsgHandler(val param: AgentBaseParam, val routingAgent: RoutingAgent) extends AgentMsgHandler {
+class DefaultAgentMsgHandler(val param: CommonParam, val routingAgent: RoutingAgent) extends AgentMsgHandler {
   def handleMsg(msg: Msg): Future[Any] = {
     Future("")
   }

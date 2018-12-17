@@ -2,11 +2,15 @@ package com.evernym.agent.api
 
 import java.io.{File, FilenameFilter}
 
+import akka.actor.ActorSystem
+import akka.http.scaladsl.server.Route
+import akka.stream.Materializer
+
 import scala.concurrent.Future
 
 
-case class MsgInfoReq(ipAddress: String)
-case class MsgInfoOpt(endpoint: Option[String]=None)
+case class MsgInfoReq(ipAddress: Option[String] = None)
+case class MsgInfoOpt(endpoint: Option[String] = None)
 case class Msg(payload: Any, infoReq: MsgInfoReq, infoOpt: Option[MsgInfoOpt] = None)
 
 
@@ -16,36 +20,43 @@ trait MsgHandler {
 
 trait AgentMsgHandler extends MsgHandler
 
-
 trait MsgOrchestrator extends MsgHandler
 
-
-trait TransportParam {
-  def msgOrchestrator: MsgOrchestrator
+trait Transport {
+  def start(): Unit
+  def stop(): Unit
 }
 
-trait Transport {
-  def param: TransportParam
-  def config: ConfigProvider
-  def activate(): Unit
-  def deactivate(): Unit
+trait Extension extends MsgHandler {
+    def name: String
+    def category: String
+    def displayName: Option[String] = None
+    final def getDisplayName: String = displayName.getOrElse(name)
 }
 
 case class MsgType(name: String, version: String)
 
+trait ExtensionWrapper extends MsgHandler {
+  def name: String
+  def category: String
+  def createExtension(inputParam: Option[Any] = None): Unit
+}
 
-trait ExtensionParam
+case class CommonParam (config: ConfigProvider, actorSystem: ActorSystem, materializer: Materializer)
 
-trait Extension extends MsgHandler {
-  def config: ConfigProvider
-  def name: String                                  //unique name of the extension
-  def category: String                              //category (or type) of the extension
-  def displayName: Option[String] = None
-  final def getDisplayName: String = displayName.getOrElse(name)
-  def apply(): Extension
+trait TransportHttpAkkaRouteParam {
+  trait RouteDetail {
+    def order: Int
+    def route: Route
+  }
+  def routes: List[RouteDetail]
 }
 
 trait TransportExtension extends Transport with Extension
+
+trait AkkaHttpTransportExtension extends TransportExtension {
+  def commonParam: CommonParam
+}
 
 
 trait ExtensionFilter extends FilenameFilter {
@@ -54,17 +65,19 @@ trait ExtensionFilter extends FilenameFilter {
   override def accept(dir: File, name: String): Boolean = {
     name.endsWith(s"$fileExtension")
   }
-
 }
+
 
 trait ExtensionManager {
 
   def load(dirPaths: Set[String], filter: ExtensionFilter): Unit
 
-  def getLoadedNames: Set[String]
+  def getExtWrappers: Map[String, ExtensionWrapper]
 
-  def getSupportedMsgTypes(name: String): Set[MsgType]
+  def getExtWrapperOption(name: String): Option[ExtensionWrapper] = getExtWrappers.get(name)
 
-  def createExtension(name: String, param: Option[ExtensionParam] = None): Extension
+  def getExtWrapperReq(name: String): ExtensionWrapper = getExtWrapperOption(name).
+    getOrElse(throw new RuntimeException(s"extension with name $name not found"))
+
 }
 

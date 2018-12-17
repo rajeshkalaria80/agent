@@ -53,16 +53,26 @@ def commonTestSettings(projectName: String) = Seq (
   PB.protoSources in Test := Seq(file("core-agent/src/test/protobuf"))
 )
 
-lazy val commonLibraryDependencies = {
+lazy val apiLibraryDependencies = {
 
   val akkaGrp = "com.typesafe.akka"
 
   //akka related
   val coreDeps = Seq.apply(
     akkaGrp %% "akka-actor" % akka,
-    akkaGrp %% "akka-persistence" % akka,
+    akkaGrp %% "akka-stream" % akka,
+    akkaGrp %% "akka-http" % akka_http
+  )
+  coreDeps
+}
 
-    akkaGrp %% "akka-http" % akka_http,
+lazy val coreAgentLibraryDependencies = {
+
+  val akkaGrp = "com.typesafe.akka"
+
+  //akka related
+  val coreDeps = Seq.apply(
+    akkaGrp %% "akka-persistence" % akka,
     akkaGrp %% "akka-http-spray-json" % akka_http,
 
     //indy java wrapper
@@ -202,6 +212,7 @@ lazy val api = (project in file("api")).
   settings(
     name := "api",
     packageSummary := "api",
+    libraryDependencies ++= apiLibraryDependencies,
     commonSettings,
     commonPackageSettings(s"$targetDirPathPrefix")
   )
@@ -213,7 +224,7 @@ lazy val coreAgent = (project in file("core-agent")).
     name := "core-agent",
     packageSummary := "core-agent",
     packageDescription := "Scala and Akka package to run core agent",
-    libraryDependencies ++= commonLibraryDependencies,
+    libraryDependencies ++= coreAgentLibraryDependencies,
     commonTestSettings("core-agent"),
     commonSettings,
     commonPackageSettings(s"$targetDirPathPrefix"),
