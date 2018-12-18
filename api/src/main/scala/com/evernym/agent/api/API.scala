@@ -46,13 +46,6 @@ trait TransportHttpAkkaRouteParam {
   def routes: List[RouteDetail]
 }
 
-trait TransportExtension extends Transport with Extension
-
-trait AkkaHttpTransportExtension extends TransportExtension {
-  def commonParam: CommonParam
-}
-
-
 trait ExtensionFilter extends FilenameFilter {
   def fileExtension: String
 
