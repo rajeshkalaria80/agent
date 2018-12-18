@@ -27,19 +27,13 @@ trait Transport {
   def stop(): Unit
 }
 
-trait Extension extends MsgHandler {
-    def name: String
-    def category: String
-    def displayName: Option[String] = None
-    final def getDisplayName: String = displayName.getOrElse(name)
-}
-
 case class MsgType(name: String, version: String)
 
-trait ExtensionWrapper extends MsgHandler {
+trait Extension extends MsgHandler {
   def name: String
   def category: String
-  def createExtension(inputParam: Option[Any] = None): Unit
+  def getSupportedMsgTypes: Set[MsgType]
+  def init(inputParam: Option[Any]): Unit
 }
 
 case class CommonParam (config: ConfigProvider, actorSystem: ActorSystem, materializer: Materializer)
@@ -70,13 +64,13 @@ trait ExtensionFilter extends FilenameFilter {
 
 trait ExtensionManager {
 
-  def load(dirPaths: Set[String], filter: ExtensionFilter): Unit
+  def load(dirPathsOpt: Option[Set[String]] = None, filterOpt: Option[ExtensionFilter] = None): Unit
 
-  def getExtWrappers: Map[String, ExtensionWrapper]
+  def getExtensions: Map[String, Extension]
 
-  def getExtWrapperOption(name: String): Option[ExtensionWrapper] = getExtWrappers.get(name)
+  def getExtOption(name: String): Option[Extension] = getExtensions.get(name)
 
-  def getExtWrapperReq(name: String): ExtensionWrapper = getExtWrapperOption(name).
+  def getExtReq(name: String): Extension = getExtOption(name).
     getOrElse(throw new RuntimeException(s"extension with name $name not found"))
 
 }

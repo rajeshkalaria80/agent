@@ -7,33 +7,47 @@ import com.evernym.agent.api._
 import java.util.jar.Manifest
 
 
-class DefaultExtensionFilter(config: ConfigProvider) extends ExtensionFilter {
+class DefaultExtensionFilter(configProvider: ConfigProvider) extends ExtensionFilter {
   override def fileExtension: String = ".jar"
 }
 
-
-class DefaultExtensionManager(config: ConfigProvider) extends ExtensionManager {
+class DefaultExtensionManager(configProvider: ConfigProvider)
+  extends ExtensionManager {
 
   val MANIFEST_FILENAME = "EXT_MANIFEST.MF"
 
-  var loaded: Map[String, ExtensionWrapper] = Map.empty
+  var loaded: Map[String, Extension] = Map.empty
 
-  override def load(dirPaths: Set[String], filter: ExtensionFilter): Unit = {
+//  def addJarFileToClassPath(path: String): Unit = {
+//    val urlPath: String = "jar:file://" + path + "!/"
+//    addURL(new URL(urlPath))
+//  }
+
+  override def load(dirPathsOpt: Option[Set[String]] = None, filterOpt: Option[ExtensionFilter]): Unit = {
+    val dirPaths = dirPathsOpt.getOrElse(configProvider.getStringSet("agent.extensions.load-paths"))
+    val filter = filterOpt.getOrElse(new DefaultExtensionFilter(configProvider))
+    val classLoader = getClass.getClassLoader
+
     dirPaths.foreach { dirPath =>
       val folder = new File(dirPath)
       Option(folder.listFiles(filter)).map(_.toList).getOrElse(List.empty).foreach { extFile =>
-        val classLoader = new URLClassLoader(Array(extFile.toURI.toURL), getClass.getClassLoader)
-        val manifestResource: URL = classLoader.findResource(MANIFEST_FILENAME)
-        val manifest: Manifest = new Manifest(manifestResource.openStream())
-        val name: String = manifest.getMainAttributes.getValue("name")
+        val urlClassLoader = new URLClassLoader(Array(extFile.toURI.toURL), classLoader)
 
-        lazy val extWrapperClasspath: String = manifest.getMainAttributes.getValue("wrapper-class")
-        lazy val extWrapper = classLoader.loadClass(extWrapperClasspath).newInstance().asInstanceOf[ExtensionWrapper]
-        loaded += name -> extWrapper
+        val manifestResource: URL = urlClassLoader.findResource(MANIFEST_FILENAME)
+        val manifest: Manifest = new Manifest(manifestResource.openStream())
+        val extName = manifest.getMainAttributes.getValue("name")
+
+        val extWrapperClasspath = manifest.getMainAttributes.getValue("ext-class")
+        //TODO: need to remove a deprecated warning in below line
+        val extWrapper = urlClassLoader.loadClass(extWrapperClasspath).newInstance().asInstanceOf[Extension]
+        loaded += extName -> extWrapper
+
+        //addJarFileToClassPath(extFile.getAbsolutePath)
+
       }
     }
   }
 
-  override def getExtWrappers: Map[String, ExtensionWrapper] = loaded
+  override def getExtensions: Map[String, Extension] = loaded
 
 }
