@@ -6,7 +6,7 @@ import java.time.temporal.ChronoUnit
 import com.evernym.agent.api.ConfigProvider
 import com.evernym.agent.common.exception.wallet.WalletExceptions._
 import com.evernym.agent.common.libindy.LibIndyCommon
-import com.evernym.agent.common.Constants._
+import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.util.Util._
 import com.typesafe.scalalogging.Logger
 import org.hyperledger.indy.sdk.{IOException, InvalidStateException}

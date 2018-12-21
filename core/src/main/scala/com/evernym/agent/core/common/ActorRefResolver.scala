@@ -3,7 +3,7 @@ package com.evernym.agent.core.common
 import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import com.evernym.agent.api.{CommonParam, ConfigProvider}
-import com.evernym.agent.common.Constants.TBR
+import com.evernym.agent.common.CommonConstants.TBR
 import com.evernym.agent.common.util.Util.{buildTimeout, getActorRefFromSelection}
 
 

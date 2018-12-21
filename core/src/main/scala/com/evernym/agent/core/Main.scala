@@ -5,7 +5,7 @@ import akka.stream.{ActorMaterializer, Materializer}
 import com.evernym.agent.api._
 import com.evernym.agent.core.msg_handler.{CoreAgentMsgHandler, DefaultRoutingAgent, RoutingAgent}
 import com.evernym.agent.core.config.DefaultConfigProvider
-import com.evernym.agent.common.Constants._
+import com.evernym.agent.core.Constants._
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.evernym.agent.common.wallet.{LibIndyWalletProvider, WalletAPI, WalletConfig}
 import com.evernym.agent.common.util.Util._
@@ -51,7 +51,7 @@ case class AgentActorCommonParam(commonParam: CommonParam, routingAgent: Routing
 object Main extends App {
 
   lazy val configProvider: ConfigProvider = DefaultConfigProvider
-  lazy val system: ActorSystem = ActorSystem(CORE_AGENT_ACTOR_SYSTEM_NAME)
+  lazy val system: ActorSystem = ActorSystem(AGENT_CORE_ACTOR_SYSTEM_NAME)
   lazy val materializer: Materializer = ActorMaterializer()(system)
   val poolConnManager: LedgerPoolConnManager = new LedgerPoolConnManager(configProvider)
   val walletAPI: WalletAPI = new WalletAPI(new LibIndyWalletProvider(configProvider), poolConnManager)

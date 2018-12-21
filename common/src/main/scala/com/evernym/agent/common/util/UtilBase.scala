@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 import akka.actor.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import com.evernym.agent.api.ConfigProvider
-import com.evernym.agent.common.Constants._
+import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.exception.Exceptions.InvalidValue
 import com.evernym.agent.common.wallet.{DefaultWalletConfig, WalletAPI, WalletAccessDetail, WalletConfig}
 import com.typesafe.scalalogging.Logger

@@ -4,7 +4,7 @@ import java.io.{File, FilenameFilter}
 import java.net.{URL, URLClassLoader}
 import java.util.jar.Manifest
 
-import com.evernym.agent.common.Constants._
+import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.api._
 
 

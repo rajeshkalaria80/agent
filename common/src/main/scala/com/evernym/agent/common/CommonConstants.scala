@@ -1,6 +1,6 @@
 package com.evernym.agent.common
 
-object Constants {
+object CommonConstants {
 
   val TBR = "TBR"   //to be replaced with correct value
 
@@ -12,8 +12,6 @@ object Constants {
   val EXT_LOADING_FAILED = 2
 
   val EXT_MANIFEST_FILENAME = "EXT_MANIFEST.MF"
-
-  val CORE_AGENT_ACTOR_SYSTEM_NAME = "agent-core"
 
   val LEDGER_TXN_PROTOCOL_V1 = 1
   val LEDGER_TXN_PROTOCOL_V2 = 2

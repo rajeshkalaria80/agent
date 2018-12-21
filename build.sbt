@@ -239,7 +239,7 @@ lazy val core = (project in file("core")).
     packageSummary := "agent-core",
     packageDescription := "Scala and Akka package to run core agent",
     libraryDependencies ++= coreAgentLibraryDependencies,
-    commonTestSettings("core"),
+    commonTestSettings("agent-core"),
     commonSettings,
     commonPackageSettings(s"$targetDirPathPrefix"),
     //libindy provides libindy.so

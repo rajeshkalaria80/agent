@@ -3,7 +3,7 @@ package com.evernym.agent.common.libindy
 import com.typesafe.scalalogging.Logger
 import com.evernym.agent.api.ConfigProvider
 import com.evernym.agent.common.exception.Exceptions
-import com.evernym.agent.common.Constants._
+import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.util.Util._
 import org.hyperledger.indy.sdk.pool.Pool
 import org.hyperledger.indy.sdk.pool.PoolJSONParameters.CreatePoolLedgerConfigJSONParameter

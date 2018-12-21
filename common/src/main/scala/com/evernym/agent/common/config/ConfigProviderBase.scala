@@ -1,7 +1,7 @@
 package com.evernym.agent.common.config
 
 import com.evernym.agent.api.ConfigProvider
-import com.evernym.agent.common.Constants.TBR
+import com.evernym.agent.common.CommonConstants.TBR
 import com.evernym.agent.common.exception.Exceptions._
 import com.typesafe.config.ConfigException.Missing
 import com.typesafe.config.{Config, ConfigException, ConfigFactory}

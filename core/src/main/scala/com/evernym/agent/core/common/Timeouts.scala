@@ -2,7 +2,7 @@ package com.evernym.agent.core.common
 
 import akka.util.Timeout
 import com.evernym.agent.api.ConfigProvider
-import com.evernym.agent.common.Constants.TBR
+import com.evernym.agent.common.CommonConstants.TBR
 import com.evernym.agent.common.util.Util.buildTimeout
 
 

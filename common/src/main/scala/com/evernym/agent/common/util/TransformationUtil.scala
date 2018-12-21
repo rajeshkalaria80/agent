@@ -2,7 +2,7 @@ package com.evernym.agent.common.util
 
 import java.time.ZonedDateTime
 
-import com.evernym.agent.common.Constants.TBR
+import com.evernym.agent.common.CommonConstants.TBR
 import com.evernym.agent.common.exception.Exceptions._
 import com.evernym.agent.common.util.Util._
 import spray.json._

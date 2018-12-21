@@ -6,7 +6,7 @@ import java.time.temporal.ChronoUnit
 import java.util.concurrent.ExecutionException
 
 import com.evernym.agent.common.exception.Exceptions._
-import com.evernym.agent.common.Constants._
+import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.exception.Exceptions
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.typesafe.scalalogging.Logger
