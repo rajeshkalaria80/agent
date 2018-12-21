@@ -53,11 +53,10 @@ def commonTestSettings(projectName: String) = Seq (
   PB.protoSources in Test := Seq(file("core-agent/src/test/protobuf"))
 )
 
+val akkaGrp = "com.typesafe.akka"
+
 lazy val apiLibraryDependencies = {
 
-  val akkaGrp = "com.typesafe.akka"
-
-  //akka related
   val coreDeps = Seq.apply(
     akkaGrp %% "akka-actor" % akka,
     akkaGrp %% "akka-stream" % akka,
@@ -66,25 +65,30 @@ lazy val apiLibraryDependencies = {
   coreDeps
 }
 
-lazy val coreAgentLibraryDependencies = {
-
-  val akkaGrp = "com.typesafe.akka"
-
-  //akka related
-  val coreDeps = Seq.apply(
-    akkaGrp %% "akka-persistence" % akka,
+lazy val commonLibraryDependencies = {
+  apiLibraryDependencies ++ Seq.apply(
+    akkaGrp %% "akka-slf4j" % akka,
     akkaGrp %% "akka-http-spray-json" % akka_http,
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
 
     //indy java wrapper
     "org.hyperledger" % "indy" % "1.6.8",
 
+    "commons-codec" % "commons-codec" % "1.11"
+  )
+}
+
+lazy val coreAgentLibraryDependencies = {
+
+  //akka related
+  val coreDeps = Seq.apply(
     //logging deps
-    "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
-    "com.typesafe.akka" %% "akka-slf4j" % akka,
+    akkaGrp %% "akka-slf4j" % akka,
+    akkaGrp %% "akka-persistence" % akka,
 
     //persistence dependencies
-    "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.91",
+    akkaGrp %% "akka-persistence-cassandra" % "0.91",
     "org.iq80.leveldb" % "leveldb" % "0.10",
 
     //sms (TODO: need to finalize dependencies mentioned in this section)
@@ -111,7 +115,7 @@ lazy val coreAgentLibraryDependencies = {
     akkaGrp %% "akka-http-testkit" % akka_http
   ).map(_ % "test")
 
-  coreDeps ++ testDeps
+  commonLibraryDependencies ++ coreDeps ++ testDeps
 
 }
 
@@ -210,31 +214,41 @@ def commonPackageSettings(targetRootPath: String) = Seq (
 lazy val api = (project in file("api")).
   enablePlugins(DebianPlugin).
   settings(
-    name := "api",
-    packageSummary := "api",
+    name := "agent-api",
+    packageSummary := "agent-api",
     libraryDependencies ++= apiLibraryDependencies,
     commonSettings,
     commonPackageSettings(s"$targetDirPathPrefix")
   )
 
-
-lazy val coreAgent = (project in file("core-agent")).
+lazy val common = (project in file("common")).
   enablePlugins(DebianPlugin).
   settings(
-    name := "core-agent",
-    packageSummary := "core-agent",
+    name := "agent-common",
+    packageSummary := "agent-common",
+    libraryDependencies ++= commonLibraryDependencies,
+    commonSettings,
+    commonPackageSettings(s"$targetDirPathPrefix")
+  ).dependsOn(api % "test->test; compile->compile")
+
+
+lazy val core = (project in file("core")).
+  enablePlugins(DebianPlugin).
+  settings(
+    name := "agent-core",
+    packageSummary := "agent-core",
     packageDescription := "Scala and Akka package to run core agent",
     libraryDependencies ++= coreAgentLibraryDependencies,
-    commonTestSettings("core-agent"),
+    commonTestSettings("core"),
     commonSettings,
     commonPackageSettings(s"$targetDirPathPrefix"),
     //libindy provides libindy.so
     debianPackageDependencies in Debian ++= Seq("default-jre", "libindy(>= 1.6.8)")
-  ).dependsOn(api % "test->test; compile->compile")
+  ).dependsOn(common % "test->test; compile->compile")
 
 
 
-lazy val agent = project.in(file(".")).aggregate(api, coreAgent)
+lazy val agent = project.in(file(".")).aggregate(api, common, core)
 
 Revolver.settings
 

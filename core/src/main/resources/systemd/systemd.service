@@ -1,0 +1,16 @@
+[Unit]
+Description=Agent
+Requires=network.target
+
+[Service]
+Type=notify
+NotifyAccess=all
+User=agent
+WorkingDirectory=/var/lib/agent
+Environment="JAVA_OPTS="
+SuccessExitStatus=143
+#EnvironmentFile=
+ExecStart=/usr/bin/java -cp /usr/lib/agent/agent-assembly.jar:/etc/agent com.evernym.agency.consumer.Main
+
+[Install]
+WantedBy=multi-user.target
