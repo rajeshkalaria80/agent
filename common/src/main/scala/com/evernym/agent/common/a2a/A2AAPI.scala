@@ -1,6 +1,5 @@
 package com.evernym.agent.common.a2a
 
-import java.util
 
 import com.evernym.agent.common.util.TransformationUtilBase
 import com.evernym.agent.common.CommonConstants._
@@ -20,6 +19,15 @@ case class EncryptParam(fromKeyInfo: KeyInfo, forKeyInfo: KeyInfo)
 
 case class DecryptParam(fromKeyInfo: KeyInfo)
 
+
+
+trait MsgPacker {
+
+  def packMsg[T](msg: T)(implicit rjf: RootJsonFormat[T]): Array[Byte]
+
+  def unpackMsg[T](msg: Array[Byte])(implicit rjf: RootJsonFormat[T]): T
+}
+
 trait A2AAPI {
 
   def msgPacker: MsgPacker = DefaultMsgPacker
@@ -33,12 +41,7 @@ trait A2AAPI {
 case class AuthCryptMsgParam(encryptInfo: EncryptParam, msg: A2AMsg)
 
 
-trait MsgPacker {
 
-  def packMsg[T](msg: T)(implicit rjf: RootJsonFormat[T]): Array[Byte]
-
-  def unpackMsg[T](msg: Array[Byte])(implicit rjf: RootJsonFormat[T]): T
-}
 
 object DefaultMsgPacker extends MsgPacker with TransformationUtilBase {
 

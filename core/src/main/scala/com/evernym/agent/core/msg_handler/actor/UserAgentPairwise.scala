@@ -20,7 +20,7 @@ class UserAgentPairwise(val agentActorCommonParam: AgentActorCommonParam)
 
   override val receiveRecover: Receive = {
     case odw: OwnerDetailSet => ownerDetail = Option(DIDDetail(odw.DID, odw.verKey))
-    case ai: AgentDetailSet => agentDetail = Option(AgentDetail(ai.agentID, ai.agentVerKey))
+    case ai: AgentDetailSet => agentDetail = Option(AgentDetail(ai.id, ai.verKey))
   }
 
   override val receiveCommand: Receive = {

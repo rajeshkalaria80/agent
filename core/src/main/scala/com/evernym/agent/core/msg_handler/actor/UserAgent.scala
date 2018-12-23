@@ -2,12 +2,11 @@ package com.evernym.agent.core.msg_handler.actor
 
 import akka.Done
 import akka.actor.Props
-import com.evernym.agent.common.a2a.{EncryptParam, GetVerKeyByDIDParam, KeyInfo}
+import com.evernym.agent.common.a2a._
 import com.evernym.agent.common.actor._
 import com.evernym.agent.common.wallet.{CreateNewKeyParam, StoreTheirKeyParam}
 import com.evernym.agent.core.actor.{AgentDetailSet, OwnerDetailSet}
-import com.evernym.agent.core.common.{InitAgent, JsonTransformationUtil}
-
+import com.evernym.agent.core.common.{InitAgent, JsonTransformationUtil, TypeDetail}
 
 object UserAgent {
   def props(agentCommonParam: AgentActorCommonParam) = Props(new UserAgent(agentCommonParam))
@@ -19,20 +18,22 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
   var ownerDetail: Option[DIDDetail] = None
   var agentDetail: Option[AgentDetail] = None
 
-  def agentPairwiseVerKeyReq: String = agentDetail.map(_.verKey).
+  def agentVerKeyReq: String = agentDetail.map(_.verKey).
     getOrElse(throw new RuntimeException("agent not initialized yet"))
 
   def ownerDIDReq: String = ownerDetail.map(_.DID).
     getOrElse(throw new RuntimeException("agent not initialized yet"))
 
   def authCryptParam: EncryptParam = EncryptParam(
-    KeyInfo(Left(agentPairwiseVerKeyReq)),
+    KeyInfo(Left(agentVerKeyReq)),
     KeyInfo(Right(GetVerKeyByDIDParam(ownerDIDReq, getKeyFromPool = false)))
   )
 
+  def authDecryptParam: DecryptParam = DecryptParam(KeyInfo(Left(agentVerKeyReq)))
+
   override val receiveRecover: Receive = {
     case odw: OwnerDetailSet => ownerDetail = Option(DIDDetail(odw.DID, odw.verKey))
-    case ai: AgentDetailSet => agentDetail = Option(AgentDetail(ai.agentID, ai.agentVerKey))
+    case ai: AgentDetailSet => agentDetail = Option(AgentDetail(ai.id, ai.verKey))
   }
 
   def initAgent(ia: InitAgent): Unit = {
@@ -43,12 +44,18 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
     agentActorCommonParam.walletAPI.storeTheirKey(StoreTheirKeyParam(ia.DID, ia.verKey))
     writeAndApply(OwnerDetailSet(ia.DID, ia.verKey))
 
-    val agentPairwiseNewKeyResult = agentActorCommonParam.walletAPI.createNewKey(CreateNewKeyParam())(walletInfo)
-    val agentDetail = AgentDetailSet(agentPairwiseNewKeyResult.DID, agentPairwiseNewKeyResult.verKey)
+    val agentKeyResult = agentActorCommonParam.walletAPI.createNewKey(CreateNewKeyParam())(walletInfo)
+    val agentDetail = AgentDetailSet(entityId, agentKeyResult.verKey)
     writeAndApply(agentDetail)
-    val acm = buildAgentCreatedRespMsg(agentDetail.agentID, agentDetail.agentVerKey)
+
+    val acm = buildAgentCreatedRespMsg(agentDetail.id, agentDetail.verKey)
     val respMsg = agentActorCommonParam.A2AAPI.authCryptMsg(authCryptParam, acm)
     sender ! respMsg
+  }
+
+  def handleA2AMsg(a2aMsg: A2AMsg): Unit = {
+    val decryptedMsg = agentActorCommonParam.A2AAPI.authDecryptMsg[TypeDetail](authDecryptParam, a2aMsg)
+    println("### decryptedMsg: " + decryptedMsg)
   }
 
   override val receiveCommand: Receive = {
@@ -56,7 +63,7 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
 
     case ia: InitAgent => initAgent(ia)
 
-    case GetAgentDetail => sender ! agentDetail
+    case a2a: A2AMsg => handleA2AMsg(a2a)
 
   }
 }

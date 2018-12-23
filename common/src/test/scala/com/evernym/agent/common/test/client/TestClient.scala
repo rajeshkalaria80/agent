@@ -1,6 +1,5 @@
 package com.evernym.agent.common.test.client
 
-import java.util
 
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model._
@@ -19,15 +18,11 @@ object TestClientConfigProvider extends ConfigProviderBase
 
 case class TestTypeDetail(name: String, ver: String, fmt: Option[String]=None)
 
-case class TestAgentCreatedRespMsg(`@type`: TestTypeDetail, agentPairwiseDID: String, agentPairwiseDIDVerKey: String)
-
-
 trait TestJsonTransformationUtil extends TransformationUtilBase {
 
   implicit val version: String = "1.0"
 
   implicit val typeDetailMsg: RootJsonFormat[TestTypeDetail] = jsonFormat3(TestTypeDetail.apply)
-  implicit val agentCreatedRespMsg: RootJsonFormat[TestAgentCreatedRespMsg] = jsonFormat3(TestAgentCreatedRespMsg.apply)
 
 }
 
@@ -44,7 +39,7 @@ trait TestClientBase extends TestJsonTransformationUtil {
   implicit var walletInfo: WalletInfo = _
 
   var myDIDDetail: DIDDetail = _
-  var myAgentDetail: DIDDetail = _
+  var pairwiseDIDDetails: Set[DIDDetail] = Set.empty
 
   def init(): Unit = {
     val wn = "test-client-00000000000000000000"
@@ -63,8 +58,11 @@ trait TestClientBase extends TestJsonTransformationUtil {
 
   init()
 
-  def setAgentDetail(DIDDetail: DIDDetail): Unit = {
-    myAgentDetail = DIDDetail
+  def createNewPairwiseKey(): DIDDetail = {
+    val newKey = walletAPI.createNewKey(CreateNewKeyParam())(walletInfo)
+    val dd = DIDDetail(newKey.DID, newKey.verKey)
+    pairwiseDIDDetails += dd
+    dd
   }
 
   def buildReq(hm: HttpMethod, path: String, he: RequestEntity = HttpEntity.Empty): HttpRequest =  {
@@ -81,6 +79,11 @@ trait TestClientBase extends TestJsonTransformationUtil {
     buildReq(HttpMethods.POST, path, HttpEntity(MediaTypes.`application/json`, json))
   }
 
+  def buildPostReq[T](path: String, payload: Array[Byte]): HttpRequest = {
+    val json = convertNativeMsgToJson(payload)
+    buildReq(HttpMethods.POST, path, HttpEntity(MediaTypes.`application/octet-stream`, payload))
+  }
+
   def buildPostReq(path: String, he: RequestEntity = HttpEntity.Empty): HttpRequest =
     buildReq(HttpMethods.POST, path, he)
 
@@ -93,7 +96,7 @@ trait TestClientBase extends TestJsonTransformationUtil {
 
   def myDID: String = myDIDDetail.DID
 
-  private def authDecryptRespMsg[T](rm: Array[Byte], decryptFromDID: String)(implicit rjf: RootJsonFormat[T])
+  def authDecryptRespMsg[T](rm: Array[Byte], decryptFromDID: String)(implicit rjf: RootJsonFormat[T])
   : T = {
     val param = DecryptParam(KeyInfo(Right(GetVerKeyByDIDParam(decryptFromDID, getKeyFromPool = false))))
     val prm = A2AAPI.authDecryptMsg[T](param, A2AMsg(rm))
@@ -101,10 +104,5 @@ trait TestClientBase extends TestJsonTransformationUtil {
     prm
   }
 
-  def handleRespMsg[T](rm: Array[Byte])(implicit rjf: RootJsonFormat[T]): T = {
-    authDecryptRespMsg[T](rm, myDID)
-  }
 }
 
-
-class TestClient extends TestClientBase

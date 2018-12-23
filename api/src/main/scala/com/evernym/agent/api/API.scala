@@ -35,8 +35,8 @@ case class TransportAgnosticMsg(payload: Any, infoReq: Option[MsgInfoReq] = None
 
 
 trait RoutingAgent {
-  def setRoute(forId: String, routeJson: String): Future[Either[Throwable, String]]
-  def getRoute(forId: String): Future[Either[Throwable, String]]
+  def setRoute(forId: String, routeJson: String): Future[Either[Throwable, Any]]
+  def getRoute(forId: String): Future[Either[Throwable, Any]]
   def routeMsgToAgent(toId: String, msg: Any): Future[Either[Throwable, Any]]
 }
 

@@ -6,6 +6,8 @@ import akka.pattern.ask
 import com.evernym.agent.api.{AgentMsgHandler, CommonParam, RoutingAgent, TransportAgnosticMsg}
 import com.evernym.agent.common.actor.AgentActorCommonParam
 import com.evernym.agent.common.util.TransformationUtilBase
+import com.evernym.agent.core.Constants._
+import com.evernym.agent.core.actor.RouteSet
 import com.evernym.agent.core.msg_handler.actor._
 import com.evernym.agent.core.common.{ActorRefResolver, GeneralTimeout, JsonTransformationUtil, RouteDetail}
 
@@ -20,9 +22,6 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
     with GeneralTimeout
     with ActorRefResolver {
 
-  val ACTOR_TYPE_USER_AGENT_ACTOR = 1
-  val ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR = 2
-
   val routingAgent: ActorRef = param.actorSystem.actorOf(SimpleRoutingAgent.props(param.config))
 
   def getTargetActorRef(routeJson: String): ActorRef = {
@@ -33,10 +32,10 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
     }
   }
 
-  def setRoute(forId: String, routeJson: String): Future[Either[Throwable, String]] = {
+  def setRoute(forId: String, routeJson: String): Future[Either[Throwable, Any]] = {
     val futResp = routingAgent ? SetRoute(forId, routeJson)
     futResp map {
-      case r: String => Right(r)
+      case r: RouteSet => Right(r)
       case x => Left(new RuntimeException(s"error while setting route: ${x.toString}"))
     }
   }

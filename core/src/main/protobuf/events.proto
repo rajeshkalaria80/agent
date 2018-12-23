@@ -19,6 +19,6 @@ message OwnerDetailSet {
 
 message AgentDetailSet {
     option (scalapb.message).extends = "com.evernym.agent.common.actor.Event";
-    string agentID = 1;
-    string agentVerKey = 2;
+    string id = 1;
+    string verKey = 2;
 }

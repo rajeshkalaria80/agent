@@ -72,7 +72,7 @@ class DefaultTransportParamHttpAkka(val commonParam: CommonParam, val transportM
                   case MediaTypes.`application/octet-stream` =>
                     entity(as[Array[Byte]]) { data =>
                       complete {
-                        transportMsgRouter.handleMsg(TransportAgnosticMsg(data)).map[ToResponseMarshallable] {
+                        transportMsgRouter.handleMsg(TransportAgnosticMsg(A2AMsg(data))).map[ToResponseMarshallable] {
                           msgResponseHandler
                         }
                       }
