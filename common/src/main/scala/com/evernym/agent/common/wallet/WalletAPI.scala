@@ -7,12 +7,15 @@ import java.util.concurrent.ExecutionException
 
 import com.evernym.agent.common.exception.Exceptions._
 import com.evernym.agent.common.CommonConstants._
+import com.evernym.agent.common.a2a.{DecryptParam, EncryptParam, GetVerKeyByDIDParam}
 import com.evernym.agent.common.exception.Exceptions
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.typesafe.scalalogging.Logger
 import org.hyperledger.indy.sdk.InvalidStructureException
+import org.hyperledger.indy.sdk.crypto.Crypto
 import org.hyperledger.indy.sdk.did.{Did, DidJSONParameters}
 import org.hyperledger.indy.sdk.wallet.WalletItemAlreadyExistsException
+
 
 case class WalletAccessDetail(walletName: String, encryptionKey: String,
                               walletConfig: WalletConfig, closeAfterUse: Boolean = true) {
@@ -34,7 +37,7 @@ case class StoreTheirKeyParam(theirDID: String, theirDIDVerKey: String)
 case class TheirKeyCreated(DID: String, verKey: String)
 
 
-class WalletAPI (walletProvider: WalletProvider, ledgerPoolManager: LedgerPoolConnManager) {
+class WalletAPI (val walletProvider: WalletProvider, ledgerPoolManager: LedgerPoolConnManager) {
 
   val logger: Logger = getLoggerByClass(classOf[WalletAPI])
   var wallets: Map[String, WalletExt] = Map.empty
@@ -147,6 +150,47 @@ class WalletAPI (walletProvider: WalletProvider, ledgerPoolManager: LedgerPoolCo
         case e: Throwable =>
           logger.error("error while storing their key: " + Exceptions.getErrorMsg(e))
           throw new InternalServerError(TBR, s"unhandled error while storing their key")
+      }
+    })
+  }
+
+  def getVerKey(DID: String, walletExt: WalletExt, getKeyFromPool: Boolean,
+                poolConnManager: LedgerPoolConnManager): String = {
+    if (getKeyFromPool) Did.keyForDid(poolConnManager.getSafePoolConn, walletExt.wallet, DID).get
+    else Did.keyForLocalDid(walletExt.wallet, DID).get
+  }
+
+
+  def getVerKeyFromWallet(verKeyDetail: Either[String, GetVerKeyByDIDParam])(implicit we: WalletExt): String = {
+    verKeyDetail.fold (
+      l => l,
+      r => {
+        getVerKey(r.DID, we, r.getKeyFromPool, ledgerPoolManager)
+      }
+    )
+  }
+
+  def authCrypt(param: EncryptParam, msg: Array[Byte])(implicit walletInfo: WalletInfo): Array[Byte] = {
+    executeOpWithWalletInfo("auth crypt", openWalletIfNotExists=false, { implicit we: WalletExt =>
+      val senderKey = getVerKeyFromWallet(param.fromKeyInfo.verKeyDetail)
+      val recipKey = getVerKeyFromWallet(param.forKeyInfo.verKeyDetail)
+      Crypto.authCrypt(we.wallet, senderKey, recipKey, msg).get
+    })
+  }
+
+  def authDecrypt(param: DecryptParam, msg: Array[Byte])(implicit walletInfo: WalletInfo): Array[Byte] = {
+    executeOpWithWalletInfo("auth decrypt", openWalletIfNotExists=false, { we: WalletExt =>
+      val decryptFromVerKey = getVerKeyFromWallet(param.fromKeyInfo.verKeyDetail)(we)
+      try {
+        Crypto.authDecrypt(we.wallet, decryptFromVerKey, msg).get.getDecryptedMessage
+      } catch {
+        case e: ExecutionException =>
+          e.getCause match {
+            case _: InvalidStructureException =>
+              throw new BadRequestError(TBR, "invalid encrypted box")
+            case _: Throwable => throw new BadRequestError(TBR, "unhandled error while decrypting msg")
+          }
+        case _: Throwable => throw new BadRequestError(TBR, "unhandled error while decrypting msg")
       }
     })
   }

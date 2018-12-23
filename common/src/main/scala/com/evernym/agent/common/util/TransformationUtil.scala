@@ -27,6 +27,16 @@ trait TransformationUtilBase extends JsonUtilBase {
         throw new MissingReqField(TBR, s"required attribute not found (missing/empty/null): '$jsonString' (${e.getMessage})")
     }
   }
+
+  def convertNativeMsgToJson[T](msg: T)(implicit rjf: RootJsonFormat[T]): String = {
+    try {
+      msg.toJson.toString()
+    } catch {
+      case e: IllegalArgumentException if e.getMessage.startsWith("requirement failed") =>
+        throw new MissingReqField(TBR, s"required attribute not found (missing/empty/null): '$msg'")
+    }
+  }
+
 }
 
 object TransformationUtil extends TransformationUtilBase

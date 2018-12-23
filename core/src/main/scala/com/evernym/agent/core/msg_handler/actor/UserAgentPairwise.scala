@@ -2,9 +2,10 @@ package com.evernym.agent.core.msg_handler.actor
 
 import akka.Done
 import akka.actor.Props
+import com.evernym.agent.common.actor._
 import com.evernym.agent.common.wallet.{CreateNewKeyParam, StoreTheirKeyParam}
-import com.evernym.agent.core.AgentActorCommonParam
-import com.evernym.agent.core.transport.http.akka.InitAgent
+import com.evernym.agent.core.actor.{AgentDetailSet, OwnerDetailSet}
+import com.evernym.agent.core.common.InitAgent
 
 
 object UserAgentPairwise {
@@ -12,13 +13,13 @@ object UserAgentPairwise {
 }
 
 class UserAgentPairwise(val agentActorCommonParam: AgentActorCommonParam)
-  extends PersistentActorBase with AgentCommon {
+  extends PersistentActorBase with AgentActorCommon {
 
-  var ownerDetail: Option[OwnerDetail] = None
+  var ownerDetail: Option[DIDDetail] = None
   var agentDetail: Option[AgentDetail] = None
 
   override val receiveRecover: Receive = {
-    case odw: OwnerDetailSet => ownerDetail = Option(OwnerDetail(odw.DID, odw.verKey))
+    case odw: OwnerDetailSet => ownerDetail = Option(DIDDetail(odw.DID, odw.verKey))
     case ai: AgentDetailSet => agentDetail = Option(AgentDetail(ai.agentID, ai.agentVerKey))
   }
 

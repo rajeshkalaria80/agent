@@ -44,7 +44,12 @@ trait ConfigProviderBase extends ConfigProvider {
     readOptionalConfig(config.getInt, key)
   }
 
+  def getConfigStringOption(key: String): Option[String] = {
+    readOptionalConfig(config.getString, key)
+  }
+
   def getConfigStringReq(key: String): String = {
     readReqConfig(config.getString, key)
   }
+
 }

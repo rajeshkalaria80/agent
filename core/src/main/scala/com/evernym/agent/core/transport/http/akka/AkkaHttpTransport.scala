@@ -3,7 +3,7 @@ package com.evernym.agent.core.transport.http.akka
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods._
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, MediaTypes, StatusCodes}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.headers._
@@ -12,7 +12,8 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive0, Route}
 import akka.stream.Materializer
 import com.evernym.agent.api._
-import com.evernym.agent.core.msg_handler.actor.AgentDetailSet
+import com.evernym.agent.common.a2a.A2AMsg
+import com.evernym.agent.core.common.{InitAgent, JsonTransformationUtil}
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -47,13 +48,12 @@ class DefaultTransportParamHttpAkka(val commonParam: CommonParam, val transportM
   implicit val executor: ExecutionContextExecutor = commonParam.actorSystem.dispatcher
 
   def msgResponseHandler: PartialFunction[Any, ToResponseMarshallable] = {
-    case ads: AgentDetailSet => ads
+    case a2aMsg: A2AMsg =>
+      HttpEntity(MediaTypes.`application/octet-stream`, a2aMsg.payload)
   }
 
-  class CoreAgentAkkaHttpRoute extends RouteDetail {
-    override lazy val order: Int = 1
-
-    override lazy val route: Route = logRequestResult("core-agent-service") {
+  class CoreAgentAkkaHttpRoute {
+    lazy val coreAgentRoute: Route = logRequestResult("core-agent-service") {
       pathPrefix("agent") {
         path("init") {
           (post & entity(as[InitAgent])) { ai =>
@@ -77,8 +77,7 @@ class DefaultTransportParamHttpAkka(val commonParam: CommonParam, val transportM
                         }
                       }
                     }
-                  case x =>
-                    reject
+                  case _ => reject
                 }
               }
             }
@@ -87,7 +86,7 @@ class DefaultTransportParamHttpAkka(val commonParam: CommonParam, val transportM
     }
   }
 
-  override lazy val routes: List[RouteDetail] = List (new CoreAgentAkkaHttpRoute)
+  override lazy val route: Route = (new CoreAgentAkkaHttpRoute).coreAgentRoute
 }
 
 
@@ -103,7 +102,7 @@ class CoreAgentTransportAkkaHttp(val commonParam: CommonParam, val routeParam: T
   implicit def materializer: Materializer = commonParam.materializer
 
   override def start(): Unit = {
-    val route: Route = routeParam.routes.sortBy(_.order).map(_.route).reduce(_ ~ _)
+    val route: Route = routeParam.route
     Http().bindAndHandle(corsHandler(route), "0.0.0.0", 6000)
   }
 

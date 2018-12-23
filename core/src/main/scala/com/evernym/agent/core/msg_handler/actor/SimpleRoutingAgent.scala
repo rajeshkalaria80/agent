@@ -2,6 +2,8 @@ package com.evernym.agent.core.msg_handler.actor
 
 import akka.actor.Props
 import com.evernym.agent.api.ConfigProvider
+import com.evernym.agent.common.actor.PersistentActorBase
+import com.evernym.agent.core.actor.RouteSet
 
 
 //cmd

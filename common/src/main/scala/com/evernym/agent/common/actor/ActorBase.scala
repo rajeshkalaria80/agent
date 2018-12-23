@@ -1,4 +1,4 @@
-package com.evernym.agent.core.msg_handler.actor
+package com.evernym.agent.common.actor
 
 import akka.persistence.PersistentActor
 

@@ -50,7 +50,7 @@ def commonTestSettings(projectName: String) = Seq (
   PB.targets in Test := Seq(
     scalapb.gen(flatPackage = true) -> (sourceManaged in Test).value
   ),
-  PB.protoSources in Test := Seq(file("core-agent/src/test/protobuf"))
+  PB.protoSources in Test := Seq(file(s"$projectName/src/test/protobuf"))
 )
 
 val akkaGrp = "com.typesafe.akka"
@@ -66,16 +66,32 @@ lazy val apiLibraryDependencies = {
 }
 
 lazy val commonLibraryDependencies = {
-  apiLibraryDependencies ++ Seq.apply(
-    akkaGrp %% "akka-slf4j" % akka,
+  val coreDeps = apiLibraryDependencies ++ Seq.apply(
+    akkaGrp %% "akka-persistence" % akka,
     akkaGrp %% "akka-http-spray-json" % akka_http,
+
+    //logging related
+    akkaGrp %% "akka-slf4j" % akka,
     "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
+    "ch.qos.logback" % "logback-classic" % "1.2.3",
 
     //indy java wrapper
     "org.hyperledger" % "indy" % "1.6.8",
 
-    "commons-codec" % "commons-codec" % "1.11"
+    //sha functions
+    "commons-codec" % "commons-codec" % "1.11",
+
+    //others
+    "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
+    "org.velvia" %% "msgpack4s" % "0.6.0"
   )
+  val testDeps = Seq(
+    "org.iq80.leveldb" % "leveldb" % "0.7",
+    akkaGrp %% "akka-http-testkit" % akka_http,
+    "org.scalatest" % "scalatest_2.12" % scala_test
+  ).map(_ % "test")
+
+  coreDeps ++ testDeps
 }
 
 lazy val coreAgentLibraryDependencies = {
@@ -85,7 +101,6 @@ lazy val coreAgentLibraryDependencies = {
     //logging deps
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     akkaGrp %% "akka-slf4j" % akka,
-    akkaGrp %% "akka-persistence" % akka,
 
     //persistence dependencies
     akkaGrp %% "akka-persistence-cassandra" % "0.91",
@@ -95,12 +110,7 @@ lazy val coreAgentLibraryDependencies = {
     "com.twilio.sdk" % "twilio-java-sdk" % "6.3.0",
     "javax.ws.rs" % "javax.ws.rs-api" % "2.0",
     "com.fasterxml.jackson.jaxrs" % "jackson-jaxrs-json-provider" % jackson,
-    "org.glassfish.jersey.core" % "jersey-client" % "2.25",
-
-    //others
-    "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
-    "info.faljse" % "SDNotify" % "1.1",
-    "org.velvia" %% "msgpack4s" % "0.6.0"
+    "org.glassfish.jersey.core" % "jersey-client" % "2.25"
   )
 
   //test dependencies
@@ -227,6 +237,7 @@ lazy val common = (project in file("common")).
     name := "agent-common",
     packageSummary := "agent-common",
     libraryDependencies ++= commonLibraryDependencies,
+    //commonTestSettings("agent-common"),
     commonSettings,
     commonPackageSettings(s"$targetDirPathPrefix")
   ).dependsOn(api % "test->test; compile->compile")

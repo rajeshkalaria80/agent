@@ -1,25 +1,16 @@
 package com.evernym.agent.core.msg_handler
 
 
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, InvalidActorNameException}
 import akka.pattern.ask
-import com.evernym.agent.api.{AgentMsgHandler, CommonParam, TransportAgnosticMsg}
+import com.evernym.agent.api.{AgentMsgHandler, CommonParam, RoutingAgent, TransportAgnosticMsg}
+import com.evernym.agent.common.actor.AgentActorCommonParam
 import com.evernym.agent.common.util.TransformationUtilBase
-import com.evernym.agent.core.AgentActorCommonParam
 import com.evernym.agent.core.msg_handler.actor._
-import com.evernym.agent.core.common.{ActorRefResolver, GeneralTimeout}
-import com.evernym.agent.core.transport.http.akka.JsonTransformationUtil
+import com.evernym.agent.core.common.{ActorRefResolver, GeneralTimeout, JsonTransformationUtil, RouteDetail}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-
-trait RoutingAgent {
-  def setRoute(forId: String, routeJson: String): Future[Either[Throwable, String]]
-  def getRoute(forId: String): Future[Either[Throwable, String]]
-  def routeMsgToAgent(toId: String, msg: Any): Future[Either[Throwable, Any]]
-}
-
-case class RouteDetail(persistenceId: String, actorTypeId: Int)
 
 
 class DefaultRoutingAgent(implicit val param: CommonParam)
@@ -76,14 +67,21 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
 class CoreAgentMsgHandler(val agentCommonParam: AgentActorCommonParam)
   extends AgentMsgHandler with ActorRefResolver{
 
-  implicit def param: CommonParam = agentCommonParam.commonParam
+  implicit lazy val param: CommonParam = agentCommonParam.commonParam
 
-  param.actorSystem.actorOf(UserAgent.props(agentCommonParam), USER_AGENT_ACTOR_NAME)
-  param.actorSystem.actorOf(UserAgentPairwise.props(agentCommonParam), USER_AGENT_PAIRWISE_ACTOR_NAME)
+  lazy val userAgentActorRef: ActorRef = {
+    try {
+      param.actorSystem.actorOf(UserAgent.props(agentCommonParam), USER_AGENT_ACTOR_NAME)
+    } catch {
+      case e: InvalidActorNameException =>
+        val ar = param.actorSystem.child(USER_AGENT_ACTOR_NAME)
+        userAgent
+    }
+  }
 
   def handleMsg(msg: Any): Future[Any] = {
     msg match {
-      case tam: TransportAgnosticMsg => userAgent ? tam.payload
+      case tam: TransportAgnosticMsg => userAgentActorRef ? tam.payload
     }
   }
 }

@@ -1,18 +1,21 @@
-package com.evernym.agent.core.msg_handler.actor
-
+package com.evernym.agent.common.actor
 
 import akka.persistence.PersistentActor
+import com.evernym.agent.api.{CommonParam, RoutingAgent}
+import com.evernym.agent.common.a2a.A2AAPI
 import com.evernym.agent.common.wallet._
 import com.evernym.agent.common.util.Util._
-import com.evernym.agent.core.AgentActorCommonParam
 
+case class AgentDetail(id: String, verKey: String)
 
-trait AgentCommon {  this: PersistentActor =>
+case class DIDDetail(DID: String, verKey: String)
+
+case class AgentActorCommonParam(commonParam: CommonParam, routingAgent: RoutingAgent,
+                                 walletConfig: WalletConfig, walletAPI: WalletAPI, A2AAPI: A2AAPI)
+
+trait AgentActorCommon {  this: PersistentActor =>
 
   case object GetAgentDetail
-  case class AgentDetail(id: String, verKey: String)
-
-  case class OwnerDetail(DID: String, verKey: String)
 
   implicit var walletInfo: WalletInfo = _
 

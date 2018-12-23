@@ -18,13 +18,22 @@ trait WalletConfig {
   def buildCredentials(encKey: String): String
 }
 
-class DefaultWalletConfig extends WalletConfig {
+class DefaultWalletConfig (pathOpt: Option[String] = None) extends WalletConfig {
 
-  override def buildConfig(id: String): String =
+
+  override def buildConfig(id: String): String = {
+    val storageConfigs = pathOpt.map { path =>
+      s"""{
+         |"path":"$path"
+         }""".stripMargin
+    }.getOrElse("""{}""")
+
     s"""{
        |"id": "$id",
-       |"storage_type": "default"
+       |"storage_type": "default",
+       |"storage_config": $storageConfigs
        |}""".stripMargin
+  }
 
   override def buildCredentials(encKey: String): String = {
     s"""{

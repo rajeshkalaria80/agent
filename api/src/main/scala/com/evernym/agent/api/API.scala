@@ -18,6 +18,8 @@ trait ConfigProvider {
   def getConfigIntOption(key: String): Option[Int]
 
   def getConfigStringReq(key: String): String
+
+  def getConfigStringOption(key: String): Option[String]
 }
 
 //any "required" detail about message
@@ -30,6 +32,13 @@ case class MsgInfoOpt(endpoint: Option[String] = None)
 
 //TODO: temporarily named it with word "TransportAgnostic", later on we may remove it
 case class TransportAgnosticMsg(payload: Any, infoReq: Option[MsgInfoReq] = None, infoOpt: Option[MsgInfoOpt] = None)
+
+
+trait RoutingAgent {
+  def setRoute(forId: String, routeJson: String): Future[Either[Throwable, String]]
+  def getRoute(forId: String): Future[Either[Throwable, String]]
+  def routeMsgToAgent(toId: String, msg: Any): Future[Either[Throwable, Any]]
+}
 
 
 trait MsgHandler {
@@ -63,11 +72,7 @@ case class CommonParam (config: ConfigProvider,
 
 
 trait TransportHttpAkkaRouteParam {
-  trait RouteDetail {
-    def order: Int
-    def route: Route
-  }
-  def routes: List[RouteDetail]
+  def route: Route
 }
 
 trait ExtFileFilterCriteria {

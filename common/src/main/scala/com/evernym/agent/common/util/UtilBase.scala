@@ -110,9 +110,11 @@ trait UtilBase {
     )
 
   def buildWalletConfig(configProvider: ConfigProvider): WalletConfig = {
-    new DefaultWalletConfig
+    val storagePathOpt = configProvider.getConfigStringOption("agent.libindy.wallet.storage-config-path")
+    new DefaultWalletConfig(storagePathOpt)
   }
 
+  def buildDurationInSeconds(seconds: Int): FiniteDuration = Duration.create(seconds, TimeUnit.SECONDS)
 
 }
 

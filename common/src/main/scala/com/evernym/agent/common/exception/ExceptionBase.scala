@@ -32,6 +32,10 @@ trait ExceptionBase {
                         errorDetail: Option[Any] = None)
     extends BadRequestError(statusCode, statusMsg, errorDetail)
 
+  class EmptyValueForOptionalField(statusCode: String, statusMsg: String,
+                        errorDetail: Option[Any] = None)
+    extends BadRequestError(statusCode, statusMsg, errorDetail)
+
   class InternalServerError(statusCode: String, statusMsg: String,
                         errorDetail: Option[Any] = None)
     extends BadRequestError(statusCode, statusMsg, errorDetail)

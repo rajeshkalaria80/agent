@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+// Brought in from scalapb-runtime
+import "scalapb/scalapb.proto";
+
+package com.evernym.agent.common.actor;
+
+message TransformedEvent {
+    int32 transformationId = 1;
+    int32 eventCode = 2;
+    bytes data = 3;
+};
