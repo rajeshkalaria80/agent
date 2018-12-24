@@ -33,7 +33,7 @@ trait TestClientBase extends TestJsonTransformationUtil {
   val ledgerPoolMngr: LedgerPoolConnManager = new LedgerPoolConnManager(configProvider)
   val walletAPI: WalletAPI = new WalletAPI(walletProvider, ledgerPoolMngr)
 
-  val A2AAPI: A2AAPI = new DefaultA2AAPI(walletAPI)
+  val A2AAPI: AgentToAgentAPI = new DefaultA2AAPI(walletAPI)
 
   var walletAccessDetail: WalletAccessDetail = _
   implicit var walletInfo: WalletInfo = _
