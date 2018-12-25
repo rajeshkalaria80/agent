@@ -5,11 +5,11 @@ import org.velvia.MsgPack
 import org.velvia.MsgPackUtils.unpackMap
 
 
-class MsgPackApplyParam()
-case class MsgPackApplyResult(msg: Array[Byte])
+case class MsgPackApplyParam(data: Map[String, Any]) extends ApplyParam
+case class MsgPackApplyResult(result: Array[Byte]) extends ApplyResult
 
-class MsgPackUnapplyParam()
-case class MsgPackUnapplyResult(msg: Any)
+case class MsgPackUnapplyParam(data: Array[Byte]) extends UnapplyParam
+case class MsgPackUnapplyResult(result: Map[String, Any]) extends UnapplyResult
 
 
 class MsgPackTransformer
@@ -17,12 +17,12 @@ class MsgPackTransformer
     MsgPackApplyParam, MsgPackApplyResult,
     MsgPackUnapplyParam, MsgPackUnapplyResult] with TransformationUtilBase {
 
-  override def apply[T](data: T, paramOpt: Option[MsgPackApplyParam]=None): MsgPackApplyResult = {
-    MsgPackApplyResult(MsgPack.pack(data))
+  override def apply[T, P](param: MsgPackApplyParam)(implicit pf: Perhaps[P]=null): MsgPackApplyResult = {
+    MsgPackApplyResult(MsgPack.pack(param.data))
   }
 
-  override def unapply[T](data: T, paramOpt: Option[MsgPackUnapplyParam]=None): MsgPackUnapplyResult = {
-    MsgPackUnapplyResult(unpackMap(data.asInstanceOf[Array[Byte]]).asInstanceOf[Map[String, Any]])
+  override def unapply[T, P](param: MsgPackUnapplyParam)(implicit pf: Perhaps[P]=null): MsgPackUnapplyResult = {
+    MsgPackUnapplyResult(unpackMap(param.data).asInstanceOf[Map[String, Any]])
   }
 }
 

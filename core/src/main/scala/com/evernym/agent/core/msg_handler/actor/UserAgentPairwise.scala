@@ -23,6 +23,12 @@ class UserAgentPairwise(val agentActorCommonParam: AgentActorCommonParam)
     case ai: AgentDetailSet => agentDetail = Option(AgentDetail(ai.id, ai.verKey))
   }
 
+  def agentVerKeyReq: String = agentDetail.map(_.verKey).
+    getOrElse(throw new RuntimeException("agent not initialized yet"))
+
+  def ownerDIDReq: String = ownerDetail.map(_.DID).
+    getOrElse(throw new RuntimeException("agent not initialized yet"))
+
   override val receiveCommand: Receive = {
     case _: InitAgent if agentDetail.isDefined => sender ! Done
 

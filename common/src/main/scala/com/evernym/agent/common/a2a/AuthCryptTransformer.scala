@@ -8,12 +8,12 @@ case class KeyInfo(verKeyDetail: Either[String, GetVerKeyByDIDParam])
 
 
 case class EncryptParam(fromKeyInfo: KeyInfo, forKeyInfo: KeyInfo)
-case class AuthCryptApplyParam(encryptParam: EncryptParam, walletInfo: WalletInfo)
-case class AuthCryptApplyResult(msg: Array[Byte])
+case class AuthCryptApplyParam(data: Array[Byte], encryptParam: EncryptParam, walletInfo: WalletInfo) extends ApplyParam
+case class AuthCryptApplyResult(result: Array[Byte]) extends ApplyResult
 
 case class DecryptParam(fromKeyInfo: KeyInfo)
-case class AuthCryptUnapplyParam(decryptParam: DecryptParam, walletInfo: WalletInfo)
-case class AuthCryptUnapplyResult(msg: Array[Byte])
+case class AuthCryptUnapplyParam(data: Array[Byte], decryptParam: DecryptParam, walletInfo: WalletInfo) extends UnapplyParam
+case class AuthCryptUnapplyResult(result: Array[Byte]) extends UnapplyResult
 
 
 class AuthCryptoTransformer (walletAPI: WalletAPI)
@@ -21,13 +21,11 @@ class AuthCryptoTransformer (walletAPI: WalletAPI)
     AuthCryptApplyParam, AuthCryptApplyResult,
     AuthCryptUnapplyParam, AuthCryptUnapplyResult] {
 
-  override def apply[T](data: T, paramOpt: Option[AuthCryptApplyParam]): AuthCryptApplyResult = {
-    val paramReq = paramOpt.getOrElse(throw new RuntimeException("required param missing"))
-    AuthCryptApplyResult(walletAPI.authCrypt(paramReq.encryptParam, data.asInstanceOf[Array[Byte]])(paramReq.walletInfo))
+  override def apply[T, P](param: AuthCryptApplyParam)(implicit pf: Perhaps[P]=null): AuthCryptApplyResult = {
+    AuthCryptApplyResult(walletAPI.authCrypt(param.encryptParam, param.data)(param.walletInfo))
   }
 
-  override def unapply[T](data: T, paramOpt: Option[AuthCryptUnapplyParam]): AuthCryptUnapplyResult = {
-    val paramReq = paramOpt.getOrElse(throw new RuntimeException("required param missing"))
-    AuthCryptUnapplyResult(walletAPI.authDecrypt(paramReq.decryptParam, data.asInstanceOf[Array[Byte]])(paramReq.walletInfo))
+  override def unapply[T, P](param: AuthCryptUnapplyParam)(implicit pf: Perhaps[P]=null): AuthCryptUnapplyResult = {
+    AuthCryptUnapplyResult(walletAPI.authDecrypt(param.decryptParam, param.data)(param.walletInfo))
   }
 }

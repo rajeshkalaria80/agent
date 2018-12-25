@@ -33,13 +33,12 @@ trait TestClientBase extends TestJsonTransformationUtil {
   val ledgerPoolMngr: LedgerPoolConnManager = new LedgerPoolConnManager(configProvider)
   val walletAPI: WalletAPI = new WalletAPI(walletProvider, ledgerPoolMngr)
 
-  val A2AAPI: AgentToAgentAPI = new DefaultA2AAPI(walletAPI)
+  val defaultA2AAPI: AgentToAgentAPI = new DefaultAgentToAgentAPI(walletAPI)
 
   var walletAccessDetail: WalletAccessDetail = _
   implicit var walletInfo: WalletInfo = _
 
   var myDIDDetail: DIDDetail = _
-  var pairwiseDIDDetails: Set[DIDDetail] = Set.empty
 
   def init(): Unit = {
     val wn = "test-client-00000000000000000000"
@@ -57,13 +56,6 @@ trait TestClientBase extends TestJsonTransformationUtil {
   }
 
   init()
-
-  def createNewPairwiseKey(): DIDDetail = {
-    val newKey = walletAPI.createNewKey(CreateNewKeyParam())(walletInfo)
-    val dd = DIDDetail(newKey.DID, newKey.verKey)
-    pairwiseDIDDetails += dd
-    dd
-  }
 
   def buildReq(hm: HttpMethod, path: String, he: RequestEntity = HttpEntity.Empty): HttpRequest =  {
     val req = HttpRequest(
@@ -96,12 +88,27 @@ trait TestClientBase extends TestJsonTransformationUtil {
 
   def myDID: String = myDIDDetail.DID
 
+  def buildAuthCryptParam(forAgentVerKey: String, data: Array[Byte]): AuthCryptApplyParam = {
+    val encryptParam =
+      EncryptParam(
+        KeyInfo(Left(myDIDDetail.verKey)),
+        KeyInfo(Right(GetVerKeyByDIDParam(forAgentVerKey, getKeyFromPool = false)))
+      )
+    AuthCryptApplyParam(data, encryptParam, walletInfo)
+  }
+
+  def buildAuthDecryptParam(data: Array[Byte]): AuthCryptUnapplyParam = {
+    val decryptParam = DecryptParam(KeyInfo(Left(myDIDDetail.verKey)))
+    AuthCryptUnapplyParam(data, decryptParam, walletInfo)
+  }
+
   def authDecryptRespMsg[T](rm: Array[Byte], decryptFromDID: String)(implicit rjf: RootJsonFormat[T])
   : T = {
     val param = DecryptParam(KeyInfo(Right(GetVerKeyByDIDParam(decryptFromDID, getKeyFromPool = false))))
-    val prm = A2AAPI.authDecryptMsg[T](param, A2AMsg(rm))
-    println("parsed response msg: " + prm)
-    prm
+    val prm = defaultA2AAPI.authDecrypt(buildAuthDecryptParam(rm))
+    val msg: T = defaultA2AAPI.unpackMsg(prm)(Perhaps(rjf))
+    println("### msg: " + msg)
+    msg
   }
 
 }

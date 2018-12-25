@@ -4,6 +4,7 @@ import com.evernym.agent.common.a2a.{EncryptParam, GetVerKeyByDIDParam, KeyInfo}
 import com.evernym.agent.common.actor.{AgentDetail, DIDDetail}
 import com.evernym.agent.core.Constants._
 import com.evernym.agent.common.test.client.{TestClientBase, TestTypeDetail}
+import com.evernym.agent.common.wallet.CreateNewKeyParam
 import spray.json.RootJsonFormat
 
 
@@ -11,15 +12,26 @@ case class TestAgentCreatedRespMsg(`@type`: TestTypeDetail, agentID: String, age
 
 case class TestCreatePairwiseKeyReqMsg(`@type`: TestTypeDetail, fromDID: String, fromDIDVerKey: String)
 
-case class TestPairwiseKeyCreatedRespMsg(`@type`: TestTypeDetail, agentPairwiseDID: String, agentPairwiseDIDVerKey: String)
+case class TestPairwiseKeyCreatedRespMsg(`@type`: TestTypeDetail, agentPairwiseId: String, agentPairwiseVerKey: String)
 
+case class AgentPairwiseKeyDetail(myPairwiseVerKey: String, agentPairwiseId: String, agentPairwiseVerKey: String)
 
 class TestCoreAgentClient extends TestClientBase {
 
   implicit val agentCreatedRespMsg: RootJsonFormat[TestAgentCreatedRespMsg] = jsonFormat3(TestAgentCreatedRespMsg.apply)
-  implicit val createPairwiseKeyResqMsg: RootJsonFormat[TestCreatePairwiseKeyReqMsg] = jsonFormat3(TestCreatePairwiseKeyReqMsg.apply)
+  implicit val createPairwiseKeyReqMsg: RootJsonFormat[TestCreatePairwiseKeyReqMsg] = jsonFormat3(TestCreatePairwiseKeyReqMsg.apply)
+
+  implicit val pairwiseKeyCreatedRespMsg: RootJsonFormat[TestPairwiseKeyCreatedRespMsg] = jsonFormat3(TestPairwiseKeyCreatedRespMsg.apply)
 
   var myAgentDetail: AgentDetail = _
+  var pairwiseDIDDetails: Map[String, AgentPairwiseKeyDetail] = Map.empty
+
+  def createNewPairwiseKey(): DIDDetail = {
+    val newKey = walletAPI.createNewKey(CreateNewKeyParam())(walletInfo)
+    val dd = DIDDetail(newKey.DID, newKey.verKey)
+    pairwiseDIDDetails += dd.DID -> AgentPairwiseKeyDetail(dd.verKey, null, null)
+    dd
+  }
 
   def myAgentVerKey: String = myAgentDetail.verKey
 
@@ -32,17 +44,31 @@ class TestCoreAgentClient extends TestClientBase {
     myAgentDetail = AgentDetail(id, verKey)
   }
 
+  def setPairwiseAgentDetail(forMyDID: String, agentPairwiseId: String, agentPairwiseVerKey: String): Unit = {
+    pairwiseDIDDetails.get(forMyDID).foreach { r =>
+      pairwiseDIDDetails += forMyDID -> AgentPairwiseKeyDetail(r.myPairwiseVerKey, agentPairwiseId, agentPairwiseVerKey)
+    }
+  }
+
   def handleAgentCreatedRespMsg(rm: Array[Byte]): TestAgentCreatedRespMsg = {
     val ac = authDecryptRespMsg[TestAgentCreatedRespMsg](rm, myDID)
     setAgentDetail(ac.agentID, ac.agentVerKey)
     ac
   }
 
-  def buildCreatePairwiseKeyReq(): Array[Byte] = {
+  def buildCreatePairwiseKeyReq(): (DIDDetail, Array[Byte]) = {
     val DIDDetail = createNewPairwiseKey()
     val cpkr = TestCreatePairwiseKeyReqMsg(
       TestTypeDetail(MSG_TYPE_CREATE_PAIRWISE_KEY, version), DIDDetail.DID, DIDDetail.verKey)
-    A2AAPI.authCryptMsg(encryptParamForAgent, cpkr).payload
+    val cpkrPackedMsg = defaultA2AAPI.packMsg(cpkr)
+    val req = defaultA2AAPI.authCrypt(buildAuthCryptParam(myAgentDetail.verKey, cpkrPackedMsg))
+    (DIDDetail, req)
+  }
+
+  def handlePairwiseKeyCreatedRespMsg(forMyDID: String, rm: Array[Byte]): TestPairwiseKeyCreatedRespMsg = {
+    val ac = authDecryptRespMsg[TestPairwiseKeyCreatedRespMsg](rm, myDID)
+    setPairwiseAgentDetail(forMyDID, ac.agentPairwiseId, ac.agentPairwiseVerKey)
+    ac
   }
 
 }

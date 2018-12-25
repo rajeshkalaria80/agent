@@ -31,10 +31,10 @@ class CoreAgentSpec extends RouteSpecCommon with JsonTransformationUtil {
   }
 
   it should "respond to create pairwise key api call" in {
-    val req = testClient.buildCreatePairwiseKeyReq()
+    val (didDetail, req) = testClient.buildCreatePairwiseKeyReq()
     testClient.buildPostReq("/agent/msg", req) ~> route ~> check {
       status shouldBe OK
-      //testClient.handleAgentCreatedRespMsg(responseAs[Array[Byte]])
+      testClient.handlePairwiseKeyCreatedRespMsg(didDetail.DID, responseAs[Array[Byte]])
     }
   }
 

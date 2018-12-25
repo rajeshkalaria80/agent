@@ -85,6 +85,7 @@ lazy val commonLibraryDependencies = {
     "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
     "org.velvia" %% "msgpack4s" % "0.6.0"
   )
+
   val testDeps = Seq(
     "org.iq80.leveldb" % "leveldb" % "0.7",
     akkaGrp %% "akka-http-testkit" % akka_http,

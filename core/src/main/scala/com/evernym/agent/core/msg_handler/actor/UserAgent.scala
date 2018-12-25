@@ -6,8 +6,9 @@ import com.evernym.agent.common.a2a._
 import com.evernym.agent.common.actor._
 import com.evernym.agent.common.wallet.{CreateNewKeyParam, StoreTheirKeyParam}
 import com.evernym.agent.core.actor.{AgentDetailSet, OwnerDetailSet}
-import com.evernym.agent.core.common.{AgentCreatedRespMsg, InitAgent, JsonTransformationUtil, TypeDetail}
+import com.evernym.agent.core.common.{AgentCreatedRespMsg, InitAgent, JsonTransformationUtil}
 import spray.json.RootJsonFormat
+
 
 object UserAgent {
   def props(agentCommonParam: AgentActorCommonParam) = Props(new UserAgent(agentCommonParam))
@@ -25,21 +26,7 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
   def ownerDIDReq: String = ownerDetail.map(_.DID).
     getOrElse(throw new RuntimeException("agent not initialized yet"))
 
-  def authCryptParam: AuthCryptApplyParam = {
-    val encryptParam =
-    EncryptParam(
-      KeyInfo(Left(agentVerKeyReq)),
-      KeyInfo(Right(GetVerKeyByDIDParam(ownerDIDReq, getKeyFromPool = false)))
-    )
-    AuthCryptApplyParam(encryptParam, walletInfo)
-  }
 
-  def authDecryptParam: AuthCryptUnapplyParam = {
-    val decryptParam = DecryptParam(KeyInfo(Left(agentVerKeyReq)))
-    AuthCryptUnapplyParam(decryptParam, walletInfo)
-  }
-
-  case class Test(param: T)(implicit rjf: RootJsonFormat[T])
 
   override val receiveRecover: Receive = {
     case odw: OwnerDetailSet => ownerDetail = Option(DIDDetail(odw.DID, odw.verKey))
@@ -59,13 +46,13 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
     writeAndApply(agentDetail)
 
     val acm = buildAgentCreatedRespMsg(agentDetail.id, agentDetail.verKey)
-    val acmrjf = Test(acm)
-    val respMsg = agentActorCommonParam.agentToAgentAPI.applyAuthCryptTransformation(acm, authCryptParam)
-    sender ! respMsg
+    val packedAcm = agentActorCommonParam.agentToAgentAPI.packMsg(acm)(Perhaps[RootJsonFormat[AgentCreatedRespMsg]](implicitly))
+    val respMsg = agentActorCommonParam.agentToAgentAPI.authCrypt(buildAuthCryptParam(packedAcm))
+    sender ! A2AMsg(respMsg)
   }
 
   def handleA2AMsg(a2aMsg: A2AMsg): Unit = {
-    val decryptedMsg = agentActorCommonParam.agentToAgentAPI.unapplyAuthCryptTransformation(a2aMsg, authDecryptParam)
+    val decryptedMsg = agentActorCommonParam.agentToAgentAPI.authDecrypt(buildAuthDecryptParam(a2aMsg.payload))
     println("### decryptedMsg: " + decryptedMsg)
   }
 

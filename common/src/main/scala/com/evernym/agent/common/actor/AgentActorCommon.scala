@@ -2,7 +2,7 @@ package com.evernym.agent.common.actor
 
 import akka.persistence.PersistentActor
 import com.evernym.agent.api.{CommonParam, RoutingAgent}
-import com.evernym.agent.common.a2a.AgentToAgentAPI
+import com.evernym.agent.common.a2a._
 import com.evernym.agent.common.wallet._
 import com.evernym.agent.common.util.Util._
 
@@ -20,6 +20,8 @@ trait AgentActorCommon {  this: PersistentActor =>
   implicit var walletInfo: WalletInfo = _
 
   def agentActorCommonParam: AgentActorCommonParam
+  def agentVerKeyReq: String
+  def ownerDIDReq: String
 
   def buildWalletAccessDetail(actorEntityId: String): WalletAccessDetail = {
     //TODO: shall we keep wallet opened, any risk?
@@ -30,5 +32,19 @@ trait AgentActorCommon {  this: PersistentActor =>
 
   def setWalletInfo(wad:  WalletAccessDetail): Unit = {
     walletInfo = WalletInfo(wad.walletName, Right(wad))
+  }
+
+  def buildAuthCryptParam(data: Array[Byte]): AuthCryptApplyParam = {
+    val encryptParam =
+      EncryptParam(
+        KeyInfo(Left(agentVerKeyReq)),
+        KeyInfo(Right(GetVerKeyByDIDParam(ownerDIDReq, getKeyFromPool = false)))
+      )
+    AuthCryptApplyParam(data, encryptParam, walletInfo)
+  }
+
+  def buildAuthDecryptParam(data: Array[Byte]): AuthCryptUnapplyParam = {
+    val decryptParam = DecryptParam(KeyInfo(Left(agentVerKeyReq)))
+    AuthCryptUnapplyParam(data, decryptParam, walletInfo)
   }
 }

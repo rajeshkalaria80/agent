@@ -3,7 +3,7 @@ package com.evernym.agent.core
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
 import com.evernym.agent.api._
-import com.evernym.agent.common.a2a.{AgentToAgentAPI, DefaultA2AAPI, ImplicitJsonConversionProvider}
+import com.evernym.agent.common.a2a.{AgentToAgentAPI, DefaultAgentToAgentAPI}
 import com.evernym.agent.common.actor.AgentActorCommonParam
 import com.evernym.agent.core.msg_handler.{CoreAgentMsgHandler, DefaultRoutingAgent}
 import com.evernym.agent.core.config.DefaultConfigProvider
@@ -11,10 +11,9 @@ import com.evernym.agent.core.Constants._
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.evernym.agent.common.wallet.{LibIndyWalletProvider, WalletAPI, WalletConfig}
 import com.evernym.agent.common.util.Util._
-import com.evernym.agent.core.common.JsonTransformationUtil
 import com.evernym.agent.core.router.DefaultMsgRouter
 import com.evernym.agent.core.transport.http.akka._
-import spray.json.RootJsonFormat
+
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -49,12 +48,6 @@ import spray.json.RootJsonFormat
 
 /////////////////////////////////////////////////////////////////////////////////
 
-class DefaultImplicitJsonConversionProvider extends ImplicitJsonConversionProvider with JsonTransformationUtil {
-  override def convert[T](inp: T): RootJsonFormat[T] = {
-    implicitly[RootJsonFormat[T]]
-  }
-}
-
 
 trait Platform {
   def configProvider: ConfigProvider
@@ -64,11 +57,11 @@ trait Platform {
   val poolConnManager: LedgerPoolConnManager = new LedgerPoolConnManager(configProvider)
   val walletAPI: WalletAPI = new WalletAPI(new LibIndyWalletProvider(configProvider), poolConnManager)
   val walletConfig: WalletConfig = buildWalletConfig(configProvider)
-  val A2AAPI: AgentToAgentAPI = new DefaultA2AAPI(walletAPI)
+  val defaultA2AAPI: AgentToAgentAPI = new DefaultAgentToAgentAPI(walletAPI)
 
   implicit lazy val commonParam: CommonParam = CommonParam(configProvider, system, materializer)
   val agentCommonParam: AgentActorCommonParam =
-    AgentActorCommonParam(commonParam, new DefaultRoutingAgent, walletConfig, walletAPI, A2AAPI)
+    AgentActorCommonParam(commonParam, new DefaultRoutingAgent, walletConfig, walletAPI, defaultA2AAPI)
 
   lazy val agentMsgHandler: AgentMsgHandler = new CoreAgentMsgHandler(agentCommonParam)
 
