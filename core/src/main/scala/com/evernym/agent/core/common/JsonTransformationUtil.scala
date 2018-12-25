@@ -52,6 +52,8 @@ case class TypeDetail(name: String, ver: String, fmt: Option[String]=None) exten
   checkOptionalNotEmpty("fmt", fmt)
 }
 
+case class AgentTypedMsg(`@type`: TypeDetail) extends ReqMsgBase
+
 case class AgentCreatedRespMsg(`@type`: TypeDetail, agentID: String, agentVerKey: String) extends RespMsgBase
 
 case class CreatePairwiseKeyReqMsg(`@type`: TypeDetail, fromDID: String, fromDIDVerKey: String) extends ReqMsgBase
@@ -71,6 +73,8 @@ trait JsonTransformationUtil extends TransformationUtilBase {
   implicit val agentDetailSet: RootJsonFormat[AgentDetailSet] = jsonFormat2(AgentDetailSet.apply)
 
   implicit val typeDetailMsg: RootJsonFormat[TypeDetail] = jsonFormat3(TypeDetail.apply)
+
+  implicit val agentTypedMsg: RootJsonFormat[AgentTypedMsg] = jsonFormat1(AgentTypedMsg.apply)
   implicit val agentCreatedRespMsg: RootJsonFormat[AgentCreatedRespMsg] = jsonFormat3(AgentCreatedRespMsg.apply)
 
   implicit val createPairwiseKeyReqMsg: RootJsonFormat[CreatePairwiseKeyReqMsg] = jsonFormat3(CreatePairwiseKeyReqMsg.apply)

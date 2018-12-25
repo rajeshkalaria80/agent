@@ -6,7 +6,7 @@ import com.evernym.agent.common.a2a._
 import com.evernym.agent.common.actor._
 import com.evernym.agent.common.wallet.{CreateNewKeyParam, StoreTheirKeyParam}
 import com.evernym.agent.core.actor.{AgentDetailSet, OwnerDetailSet}
-import com.evernym.agent.core.common.{AgentCreatedRespMsg, InitAgent, JsonTransformationUtil}
+import com.evernym.agent.core.common.{AgentCreatedRespMsg, AgentTypedMsg, InitAgent, JsonTransformationUtil}
 import spray.json.RootJsonFormat
 
 
@@ -53,7 +53,8 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
 
   def handleA2AMsg(a2aMsg: A2AMsg): Unit = {
     val decryptedMsg = agentActorCommonParam.agentToAgentAPI.authDecrypt(buildAuthDecryptParam(a2aMsg.payload))
-    println("### decryptedMsg: " + decryptedMsg)
+    val typedMsg = agentActorCommonParam.agentToAgentAPI.unpackMsg[AgentTypedMsg, RootJsonFormat[AgentTypedMsg]](decryptedMsg)(Perhaps[RootJsonFormat[AgentTypedMsg]](implicitly))
+    println("### typedMsg: " + typedMsg)
   }
 
   override val receiveCommand: Receive = {

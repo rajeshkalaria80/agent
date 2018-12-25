@@ -1,10 +1,11 @@
 package com.evernym.agent.core
 
-import com.evernym.agent.common.a2a.{EncryptParam, GetVerKeyByDIDParam, KeyInfo}
+import com.evernym.agent.common.a2a.{EncryptParam, GetVerKeyByDIDParam, KeyInfo, Perhaps}
 import com.evernym.agent.common.actor.{AgentDetail, DIDDetail}
 import com.evernym.agent.core.Constants._
 import com.evernym.agent.common.test.client.{TestClientBase, TestTypeDetail}
 import com.evernym.agent.common.wallet.CreateNewKeyParam
+import com.evernym.agent.core.common.AgentCreatedRespMsg
 import spray.json.RootJsonFormat
 
 
@@ -60,7 +61,7 @@ class TestCoreAgentClient extends TestClientBase {
     val DIDDetail = createNewPairwiseKey()
     val cpkr = TestCreatePairwiseKeyReqMsg(
       TestTypeDetail(MSG_TYPE_CREATE_PAIRWISE_KEY, version), DIDDetail.DID, DIDDetail.verKey)
-    val cpkrPackedMsg = defaultA2AAPI.packMsg(cpkr)
+    val cpkrPackedMsg = defaultA2AAPI.packMsg(cpkr)(Perhaps[RootJsonFormat[TestCreatePairwiseKeyReqMsg]](implicitly))
     val req = defaultA2AAPI.authCrypt(buildAuthCryptParam(myAgentDetail.verKey, cpkrPackedMsg))
     (DIDDetail, req)
   }

@@ -92,7 +92,7 @@ trait TestClientBase extends TestJsonTransformationUtil {
     val encryptParam =
       EncryptParam(
         KeyInfo(Left(myDIDDetail.verKey)),
-        KeyInfo(Right(GetVerKeyByDIDParam(forAgentVerKey, getKeyFromPool = false)))
+        KeyInfo(Left(forAgentVerKey))
       )
     AuthCryptApplyParam(data, encryptParam, walletInfo)
   }
