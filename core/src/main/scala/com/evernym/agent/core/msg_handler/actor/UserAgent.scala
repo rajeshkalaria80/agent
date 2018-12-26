@@ -46,16 +46,16 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
     writeAndApply(agentDetail)
 
     val acm = buildAgentCreatedRespMsg(agentDetail.id, agentDetail.verKey)
-    val respMsg = agentToAgentAPI.packAndAuthCrypt(buildPackAndAuthCryptParam(acm))(ImplicitParam[RootJsonFormat[AgentCreatedRespMsg]](implicitly))
+    val respMsg = agentToAgentAPI.packAndAuthCrypt(buildPackAndAuthCryptParam(acm))(implParam[AgentCreatedRespMsg])
     sender ! A2AMsg(respMsg)
   }
 
   def handleA2AMsg(a2aMsg: A2AMsg): Unit = {
-    val (unpackedMsg, decryptedMsg) = agentToAgentAPI.authDecryptAndUnpack[AgentTypedMsg, RootJsonFormat[AgentTypedMsg]](buildAuthDecryptParam(a2aMsg.payload))(ImplicitParam[RootJsonFormat[AgentTypedMsg]](implicitly))
-    println("### unpackedMsg: " + unpackedMsg)
-    unpackedMsg.`@type` match {
+    val (typedMsg, decryptedMsg) = agentToAgentAPI.authDecryptAndUnpack[AgentTypedMsg, RootJsonFormat[AgentTypedMsg]](buildAuthDecryptParam(a2aMsg.payload))(implParam[AgentTypedMsg])
+    println("### typedMsg: " + typedMsg)
+    typedMsg.`@type` match {
       case TypeDetail(MSG_TYPE_CREATE_PAIRWISE_KEY, "1.0", _) =>
-        val actualMsg = agentToAgentAPI.unpackMsg[CreatePairwiseKeyReqMsg, RootJsonFormat[CreatePairwiseKeyReqMsg]](decryptedMsg)(ImplicitParam[RootJsonFormat[CreatePairwiseKeyReqMsg]](implicitly))
+        val actualMsg = agentToAgentAPI.unpackMsg[CreatePairwiseKeyReqMsg, RootJsonFormat[CreatePairwiseKeyReqMsg]](decryptedMsg)(implParam[CreatePairwiseKeyReqMsg])
         println("### actualMsg: " + actualMsg)
     }
   }

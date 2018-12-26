@@ -85,7 +85,7 @@ class DefaultAgentToAgentAPI(walletAPI: WalletAPI) extends AgentToAgentAPI {
   override def unpackMsg[T, P](data: Array[Byte])(implicit oi:  ImplicitParam[P]=null): T = {
     val msgPackUnapplyResult = unapplyMsgPackTransformation(data)
     val mapToJsonUnapplyResult = unapplyJsonToMapTransformation(msgPackUnapplyResult)
-    unapplyNativeToJsonTransformation(mapToJsonUnapplyResult)
+    unapplyNativeToJsonTransformation[T, P](mapToJsonUnapplyResult)
   }
 
   override def packAndAuthCrypt[T, P](param: PackAndAuthCryptParam)

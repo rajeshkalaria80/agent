@@ -3,6 +3,7 @@ package com.evernym.agent.core.common
 import com.evernym.agent.common.util.TransformationUtilBase
 import com.evernym.agent.common.exception.Exceptions._
 import com.evernym.agent.common.CommonConstants._
+import com.evernym.agent.common.a2a.ImplicitParam
 import com.evernym.agent.core.Constants._
 import com.evernym.agent.core.actor.AgentDetailSet
 import spray.json.RootJsonFormat
@@ -59,6 +60,8 @@ case class AgentCreatedRespMsg(`@type`: TypeDetail, agentID: String, agentVerKey
 case class CreatePairwiseKeyReqMsg(`@type`: TypeDetail, fromDID: String, fromDIDVerKey: String) extends ReqMsgBase
 
 trait JsonTransformationUtil extends TransformationUtilBase {
+
+  def implParam[T](implicit rjf: RootJsonFormat[T]): ImplicitParam[RootJsonFormat[T]] = ImplicitParam(rjf)
 
   implicit val version: String = "1.0"
 
