@@ -27,7 +27,7 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
     val routeDetail = convertJsonToNativeMsg[RouteDetail](routeJson)
     routeDetail.actorTypeId match {
       case ACTOR_TYPE_USER_AGENT_ACTOR => userAgent
-      case ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR => userAgentPairwise
+      case ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR => userAgentPairwise(routeDetail.persistenceId)
     }
   }
 

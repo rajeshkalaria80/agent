@@ -7,8 +7,8 @@ import com.evernym.agent.core.actor.RouteSet
 
 
 //cmd
-case class SetRoute(agentID: String, routeInfo: String)
-case class GetRoute(agentID: String)
+case class SetRoute(agentId: String, routeInfo: String)
+case class GetRoute(agentId: String)
 
 object SimpleRoutingAgent {
   def props(configProvider: ConfigProvider) = Props(new SimpleRoutingAgent(configProvider))
@@ -25,9 +25,9 @@ class SimpleRoutingAgent(configProvider: ConfigProvider) extends PersistentActor
 
   override def receiveCommand: Receive = {
     case sr: SetRoute =>
-      writeApplyAndSendItBack(RouteSet(sr.agentID, sr.routeInfo))
+      writeApplyAndSendItBack(RouteSet(sr.agentId, sr.routeInfo))
 
     case gr: GetRoute =>
-      sender ! routes.find(_.agentID == gr.agentID)
+      sender ! routes.find(_.agentId == gr.agentId)
   }
 }

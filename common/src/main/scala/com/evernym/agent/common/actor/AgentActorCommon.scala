@@ -8,7 +8,9 @@ import com.evernym.agent.common.util.Util._
 
 case class AgentDetail(id: String, verKey: String)
 
-case class DIDDetail(DID: String, verKey: String)
+case class OwnerAgentKeyDetail(ownerDID: String, ownerDIDVerKey: String, agentVerKey: String)
+
+case class OwnerAgentPairwiseKeyDetail(ownerDID: String, ownerDIDVerKey: String, agentId: String, agentVerKey: String)
 
 case class AgentActorCommonParam(commonParam: CommonParam, routingAgent: RoutingAgent,
                                  walletConfig: WalletConfig, walletAPI: WalletAPI, agentToAgentAPI: AgentToAgentAPI)
@@ -20,6 +22,7 @@ trait AgentActorCommon {  this: PersistentActor =>
   implicit var walletInfo: WalletInfo = _
 
   def agentActorCommonParam: AgentActorCommonParam
+  def param: CommonParam = agentActorCommonParam.commonParam
   def agentVerKeyReq: String
   def ownerDIDReq: String
 

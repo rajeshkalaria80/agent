@@ -1,15 +1,14 @@
 package com.evernym.agent.core
 
-import com.evernym.agent.common.a2a.{EncryptParam, GetVerKeyByDIDParam, KeyInfo, ImplicitParam}
-import com.evernym.agent.common.actor.{AgentDetail, DIDDetail}
+import com.evernym.agent.common.a2a.{EncryptParam, GetVerKeyByDIDParam, ImplicitParam, KeyInfo}
+import com.evernym.agent.common.actor.AgentDetail
 import com.evernym.agent.core.Constants._
-import com.evernym.agent.common.test.client.{TestClientBase, TestTypeDetail}
+import com.evernym.agent.common.test.client.{DIDDetail, TestClientBase, TestTypeDetail}
 import com.evernym.agent.common.wallet.CreateNewKeyParam
-import com.evernym.agent.core.common.AgentCreatedRespMsg
 import spray.json.RootJsonFormat
 
 
-case class TestAgentCreatedRespMsg(`@type`: TestTypeDetail, agentID: String, agentVerKey: String)
+case class TestAgentCreatedRespMsg(`@type`: TestTypeDetail, agentId: String, agentVerKey: String)
 
 case class TestCreatePairwiseKeyReqMsg(`@type`: TestTypeDetail, fromDID: String, fromDIDVerKey: String)
 
@@ -52,8 +51,8 @@ class TestCoreAgentClient extends TestClientBase {
   }
 
   def handleAgentCreatedRespMsg(rm: Array[Byte]): TestAgentCreatedRespMsg = {
-    val ac = authDecryptRespMsg[TestAgentCreatedRespMsg](rm, myDID)
-    setAgentDetail(ac.agentID, ac.agentVerKey)
+    val ac = authDecryptAndUnpackRespMsg[TestAgentCreatedRespMsg](rm, myDID)
+    setAgentDetail(ac.agentId, ac.agentVerKey)
     ac
   }
 
@@ -67,7 +66,7 @@ class TestCoreAgentClient extends TestClientBase {
   }
 
   def handlePairwiseKeyCreatedRespMsg(forMyDID: String, rm: Array[Byte]): TestPairwiseKeyCreatedRespMsg = {
-    val ac = authDecryptRespMsg[TestPairwiseKeyCreatedRespMsg](rm, myDID)
+    val ac = authDecryptAndUnpackRespMsg[TestPairwiseKeyCreatedRespMsg](rm, myDID)
     setPairwiseAgentDetail(forMyDID, ac.agentPairwiseId, ac.agentPairwiseVerKey)
     ac
   }

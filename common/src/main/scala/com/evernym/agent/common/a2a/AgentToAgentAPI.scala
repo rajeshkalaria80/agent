@@ -73,7 +73,7 @@ class DefaultAgentToAgentAPI(walletAPI: WalletAPI) extends AgentToAgentAPI {
   }
 
   private def unapplyNativeToJsonTransformation[T, P](data: String)(implicit oi:  ImplicitParam[P]=null): T = {
-    nativeToJsonTransformer.unapply(NativeToJsonUnapplyParam(data)).result.asInstanceOf[T]
+    nativeToJsonTransformer.unapply[T, P](NativeToJsonUnapplyParam(data)).result.asInstanceOf[T]
   }
 
   override def packMsg[T, P](data: T)(implicit oi:  ImplicitParam[P]=null): Array[Byte] = {

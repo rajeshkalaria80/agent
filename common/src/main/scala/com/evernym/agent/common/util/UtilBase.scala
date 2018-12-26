@@ -116,10 +116,11 @@ trait UtilBase {
 
   def buildDurationInSeconds(seconds: Int): FiniteDuration = Duration.create(seconds, TimeUnit.SECONDS)
 
-  def buildRouteJson(entityId: String, actorTypeId: Int): String = {
-    s"""{"entityId":"$entityId", "actorTypeId":"$actorTypeId"}"""
+  def buildRouteJson(actorTypeId: Int): String = {
+    s"""{"actorTypeId":"$actorTypeId"}"""
   }
 
+  def getNewEntityId: String = UUID.randomUUID.toString
 }
 
 object Util extends UtilBase

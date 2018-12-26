@@ -3,9 +3,13 @@ package com.evernym.agent.core.msg_handler.actor
 import akka.Done
 import akka.actor.Props
 import com.evernym.agent.common.actor._
+import com.evernym.agent.common.util.Util._
+import com.evernym.agent.core.Constants._
 import com.evernym.agent.common.wallet.{CreateNewKeyParam, StoreTheirKeyParam}
-import com.evernym.agent.core.actor.{AgentDetailSet, OwnerDetailSet}
-import com.evernym.agent.core.common.InitAgent
+import com.evernym.agent.core.actor.OwnerAgentPairwiseKeyDetailSet
+import com.evernym.agent.core.common.InitAgentForPairwiseKey
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 
 object UserAgentPairwise {
@@ -15,35 +19,46 @@ object UserAgentPairwise {
 class UserAgentPairwise(val agentActorCommonParam: AgentActorCommonParam)
   extends PersistentActorBase with AgentActorCommon {
 
-  var ownerDetail: Option[DIDDetail] = None
-  var agentDetail: Option[AgentDetail] = None
+  var ownerAgentKeyDetailOpt: Option[OwnerAgentKeyDetail] = None
 
   override val receiveRecover: Receive = {
-    case odw: OwnerDetailSet => ownerDetail = Option(DIDDetail(odw.DID, odw.verKey))
-    case ai: AgentDetailSet => agentDetail = Option(AgentDetail(ai.id, ai.verKey))
+    case odw: OwnerAgentPairwiseKeyDetailSet => ownerAgentKeyDetailOpt =
+      Option(OwnerAgentKeyDetail(odw.ownerDID, odw.ownerDIDVerKey, odw.agentPairwiseVerKey))
+      setWalletInfo(buildWalletAccessDetail(odw.agentId))
   }
 
-  def agentVerKeyReq: String = agentDetail.map(_.verKey).
+  def ownerAgentDetailReq: OwnerAgentKeyDetail = ownerAgentKeyDetailOpt.
     getOrElse(throw new RuntimeException("agent not initialized yet"))
 
-  def ownerDIDReq: String = ownerDetail.map(_.DID).
-    getOrElse(throw new RuntimeException("agent not initialized yet"))
+  def agentVerKeyReq: String = ownerAgentDetailReq.agentVerKey
+
+  def ownerDIDReq: String = ownerAgentDetailReq.ownerDID
+
+  def initAgentForPairwiseKey(ia: InitAgentForPairwiseKey): Unit = {
+    val wad = buildWalletAccessDetail(ia.agentId)
+    setWalletInfo(wad)
+
+    agentActorCommonParam.walletAPI.storeTheirKey(StoreTheirKeyParam(ia.ownerPairwiseDID, ia.ownerPairwiseDIDVerKey))
+    val agentPairwiseNewKeyResult = agentActorCommonParam.walletAPI.createNewKey(CreateNewKeyParam())(walletInfo)
+
+    val event = OwnerAgentPairwiseKeyDetailSet(ia.ownerPairwiseDID, ia.ownerPairwiseDIDVerKey,
+      ia.agentId, agentPairwiseNewKeyResult.verKey)
+    writeAndApply(event)
+
+    val sndr = sender()
+    val addRouteInfoSetFut = agentActorCommonParam.routingAgent.setRoute(entityId, buildRouteJson(ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR))
+    addRouteInfoSetFut.map {
+      case Right(_: Any) =>
+        sndr ! event
+      case Left(e: Throwable) =>
+        throw e
+    }
+  }
 
   override val receiveCommand: Receive = {
-    case _: InitAgent if agentDetail.isDefined => sender ! Done
+    case _: InitAgentForPairwiseKey if ownerAgentKeyDetailOpt.isDefined => sender ! Done
 
-    case ia: InitAgent =>
-      val wad = buildWalletAccessDetail(entityId)
-      setWalletInfo(wad)
-      agentActorCommonParam.walletAPI.createAndOpenWallet(wad)
-
-      agentActorCommonParam.walletAPI.storeTheirKey(StoreTheirKeyParam(ia.DID, ia.verKey))
-      writeAndApply(OwnerDetailSet(ia.DID, ia.verKey))
-
-      val agentPairwiseNewKeyResult = agentActorCommonParam.walletAPI.createNewKey(CreateNewKeyParam())(walletInfo)
-      writeApplyAndSendItBack(AgentDetailSet(agentPairwiseNewKeyResult.DID, agentPairwiseNewKeyResult.verKey))
-
-    case GetAgentDetail => sender ! agentDetail
+    case ia: InitAgentForPairwiseKey => initAgentForPairwiseKey(ia)
 
   }
 }

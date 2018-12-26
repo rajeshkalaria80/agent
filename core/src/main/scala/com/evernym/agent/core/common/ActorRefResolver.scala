@@ -13,12 +13,21 @@ trait ActorRefResolver extends GeneralTimeout {
 
   val ACTOR_PATH_PREFIX = "/user"
   val USER_AGENT_ACTOR_NAME = "UserAgent"
-  val USER_AGENT_PAIRWISE_ACTOR_NAME = "UserAgentPairwise"
 
-  lazy val userAgent: ActorRef =
-    getActorRefFromSelection(s"$ACTOR_PATH_PREFIX/$USER_AGENT_ACTOR_NAME", system)
+  private var resolvedActorRefs: Map[String, ActorRef] = Map.empty
 
-  lazy val userAgentPairwise: ActorRef =
-    getActorRefFromSelection(s"$ACTOR_PATH_PREFIX/$USER_AGENT_PAIRWISE_ACTOR_NAME", system)
+  private def getFromResolved(id: String): Option[ActorRef] = resolvedActorRefs.get(id)
+
+  private def resolveAndCache(id: String): ActorRef = {
+    val ar = getActorRefFromSelection(s"$ACTOR_PATH_PREFIX/$id", system)
+    resolvedActorRefs += id -> ar
+    ar
+  }
+
+  private def getActorRef(id: String): ActorRef = getFromResolved(id).getOrElse(resolveAndCache(id))
+
+  def userAgent: ActorRef = getActorRef(USER_AGENT_ACTOR_NAME)
+
+  def userAgentPairwise(forAgentPairwiseId: String): ActorRef = getActorRef(forAgentPairwiseId)
 
 }

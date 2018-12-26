@@ -7,18 +7,22 @@ package com.evernym.agent.core.actor;
 
 message RouteSet {
     option (scalapb.message).extends = "com.evernym.agent.common.actor.Event";
-    string agentID = 1;
+    string agentId = 1;
     string routeJson = 2;
 }
 
-message OwnerDetailSet {
+message OwnerAgentKeyDetailSet {
     option (scalapb.message).extends = "com.evernym.agent.common.actor.Event";
-    string DID = 1 [(scalapb.field).scala_name = "DID"];
-    string verKey = 2;
+    string ownerDID = 1;
+    string ownerDIDVerKey = 2;
+    string agentVerKey = 3;
 }
 
-message AgentDetailSet {
+message OwnerAgentPairwiseKeyDetailSet {
     option (scalapb.message).extends = "com.evernym.agent.common.actor.Event";
-    string id = 1;
-    string verKey = 2;
+    string ownerDID = 1;
+    string ownerDIDVerKey = 2;
+    string agentId = 3;
+    string agentPairwiseVerKey = 4;
 }
+

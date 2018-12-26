@@ -5,7 +5,6 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model._
 import com.evernym.agent.api.ConfigProvider
 import com.evernym.agent.common.a2a._
-import com.evernym.agent.common.actor.DIDDetail
 import com.evernym.agent.common.config.ConfigProviderBase
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.evernym.agent.common.util.TransformationUtilBase
@@ -25,6 +24,8 @@ trait TestJsonTransformationUtil extends TransformationUtilBase {
   implicit val typeDetailMsg: RootJsonFormat[TestTypeDetail] = jsonFormat3(TestTypeDetail.apply)
 
 }
+
+case class DIDDetail(DID: String, verKey: String)
 
 trait TestClientBase extends TestJsonTransformationUtil {
 
@@ -102,13 +103,10 @@ trait TestClientBase extends TestJsonTransformationUtil {
     AuthCryptUnapplyParam(data, decryptParam, walletInfo)
   }
 
-  def authDecryptRespMsg[T](rm: Array[Byte], decryptFromDID: String)(implicit rjf: RootJsonFormat[T])
+  def authDecryptAndUnpackRespMsg[T](rm: Array[Byte], decryptFromDID: String)(implicit rjf: RootJsonFormat[T])
   : T = {
-    val param = DecryptParam(KeyInfo(Right(GetVerKeyByDIDParam(decryptFromDID, getKeyFromPool = false))))
-    val prm = defaultA2AAPI.authDecrypt(buildAuthDecryptParam(rm))
-    val msg: T = defaultA2AAPI.unpackMsg(prm)(ImplicitParam(rjf))
-    println("### msg: " + msg)
-    msg
+    val decryptedMsg = defaultA2AAPI.authDecrypt(buildAuthDecryptParam(rm))
+    defaultA2AAPI.unpackMsg[T, RootJsonFormat[T]](decryptedMsg)(ImplicitParam(rjf))
   }
 
 }
