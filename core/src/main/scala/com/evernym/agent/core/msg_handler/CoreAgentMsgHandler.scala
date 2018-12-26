@@ -9,7 +9,7 @@ import com.evernym.agent.common.util.TransformationUtilBase
 import com.evernym.agent.core.Constants._
 import com.evernym.agent.core.actor.RouteSet
 import com.evernym.agent.core.msg_handler.actor._
-import com.evernym.agent.core.common.{ActorRefResolver, GeneralTimeout, JsonTransformationUtil, RouteDetail}
+import com.evernym.agent.core.common.{ActorRefResolver, JsonTransformationUtil, RouteDetail}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,7 +19,6 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
   extends RoutingAgent
     with TransformationUtilBase
     with JsonTransformationUtil
-    with GeneralTimeout
     with ActorRefResolver {
 
   val routingAgent: ActorRef = param.actorSystem.actorOf(SimpleRoutingAgent.props(param.config))
@@ -64,7 +63,7 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
 
 
 class CoreAgentMsgHandler(val agentCommonParam: AgentActorCommonParam)
-  extends AgentMsgHandler with ActorRefResolver{
+  extends AgentMsgHandler with ActorRefResolver {
 
   implicit lazy val param: CommonParam = agentCommonParam.commonParam
 

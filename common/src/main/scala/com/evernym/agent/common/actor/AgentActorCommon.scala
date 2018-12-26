@@ -23,6 +23,8 @@ trait AgentActorCommon {  this: PersistentActor =>
   def agentVerKeyReq: String
   def ownerDIDReq: String
 
+  def agentToAgentAPI: AgentToAgentAPI = agentActorCommonParam.agentToAgentAPI
+
   def buildWalletAccessDetail(actorEntityId: String): WalletAccessDetail = {
     //TODO: shall we keep wallet opened, any risk?
     val key = generateWalletKey(actorEntityId, agentActorCommonParam.walletAPI, agentActorCommonParam.commonParam.config)
@@ -34,17 +36,21 @@ trait AgentActorCommon {  this: PersistentActor =>
     walletInfo = WalletInfo(wad.walletName, Right(wad))
   }
 
+  def getEncryptParam = EncryptParam(
+    KeyInfo(Left(agentVerKeyReq)),
+    KeyInfo(Right(GetVerKeyByDIDParam(ownerDIDReq, getKeyFromPool = false)))
+  )
+
   def buildAuthCryptParam(data: Array[Byte]): AuthCryptApplyParam = {
-    val encryptParam =
-      EncryptParam(
-        KeyInfo(Left(agentVerKeyReq)),
-        KeyInfo(Right(GetVerKeyByDIDParam(ownerDIDReq, getKeyFromPool = false)))
-      )
-    AuthCryptApplyParam(data, encryptParam, walletInfo)
+    AuthCryptApplyParam(data, getEncryptParam, walletInfo)
   }
 
   def buildAuthDecryptParam(data: Array[Byte]): AuthCryptUnapplyParam = {
     val decryptParam = DecryptParam(KeyInfo(Left(agentVerKeyReq)))
     AuthCryptUnapplyParam(data, decryptParam, walletInfo)
+  }
+
+  def buildPackAndAuthCryptParam(data: Any): PackAndAuthCryptParam = {
+    PackAndAuthCryptParam(data, getEncryptParam, walletInfo)
   }
 }

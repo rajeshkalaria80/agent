@@ -17,11 +17,13 @@ class MsgPackTransformer
     MsgPackApplyParam, MsgPackApplyResult,
     MsgPackUnapplyParam, MsgPackUnapplyResult] with TransformationUtilBase {
 
-  override def apply[T, P](param: MsgPackApplyParam)(implicit pf: Perhaps[P]=null): MsgPackApplyResult = {
+  override def apply[T, P](param: MsgPackApplyParam)
+                          (implicit oi:  ImplicitParam[P]=null): MsgPackApplyResult = {
     MsgPackApplyResult(MsgPack.pack(param.data))
   }
 
-  override def unapply[T, P](param: MsgPackUnapplyParam)(implicit pf: Perhaps[P]=null): MsgPackUnapplyResult = {
+  override def unapply[T, P](param: MsgPackUnapplyParam)
+                            (implicit oi:  ImplicitParam[P]=null): MsgPackUnapplyResult = {
     MsgPackUnapplyResult(unpackMap(param.data).asInstanceOf[Map[String, Any]])
   }
 }

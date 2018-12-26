@@ -14,11 +14,13 @@ class JsonToMapTransformer
     JsonToMapApplyParam, JsonToMapApplyResult,
     JsonToMapUnapplyParam, JsonToMapUnapplyResult] with TransformationUtilBase {
 
-  override def apply[T, P](param: JsonToMapApplyParam)(implicit pf: Perhaps[P]=null): JsonToMapApplyResult = {
+  override def apply[T, P](param: JsonToMapApplyParam)
+                          (implicit oi:  ImplicitParam[P]=null): JsonToMapApplyResult = {
     JsonToMapApplyResult(convertJsonToMap(param.data))
   }
 
-  override def unapply[T, P](param: JsonToMapUnapplyParam)(implicit pf: Perhaps[P]=null): JsonToMapUnapplyResult = {
+  override def unapply[T, P](param: JsonToMapUnapplyParam)
+                            (implicit oi:  ImplicitParam[P]=null): JsonToMapUnapplyResult = {
     JsonToMapUnapplyResult(convertMapToJson(param.data).toString)
   }
 }

@@ -4,9 +4,10 @@ import akka.Done
 import akka.actor.Props
 import com.evernym.agent.common.a2a._
 import com.evernym.agent.common.actor._
+import com.evernym.agent.core.Constants._
 import com.evernym.agent.common.wallet.{CreateNewKeyParam, StoreTheirKeyParam}
 import com.evernym.agent.core.actor.{AgentDetailSet, OwnerDetailSet}
-import com.evernym.agent.core.common.{AgentCreatedRespMsg, AgentTypedMsg, InitAgent, JsonTransformationUtil}
+import com.evernym.agent.core.common._
 import spray.json.RootJsonFormat
 
 
@@ -27,7 +28,6 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
     getOrElse(throw new RuntimeException("agent not initialized yet"))
 
 
-
   override val receiveRecover: Receive = {
     case odw: OwnerDetailSet => ownerDetail = Option(DIDDetail(odw.DID, odw.verKey))
     case ai: AgentDetailSet => agentDetail = Option(AgentDetail(ai.id, ai.verKey))
@@ -46,15 +46,18 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
     writeAndApply(agentDetail)
 
     val acm = buildAgentCreatedRespMsg(agentDetail.id, agentDetail.verKey)
-    val packedAcm = agentActorCommonParam.agentToAgentAPI.packMsg(acm)(Perhaps[RootJsonFormat[AgentCreatedRespMsg]](implicitly))
-    val respMsg = agentActorCommonParam.agentToAgentAPI.authCrypt(buildAuthCryptParam(packedAcm))
+    val respMsg = agentToAgentAPI.packAndAuthCrypt(buildPackAndAuthCryptParam(acm))(ImplicitParam[RootJsonFormat[AgentCreatedRespMsg]](implicitly))
     sender ! A2AMsg(respMsg)
   }
 
   def handleA2AMsg(a2aMsg: A2AMsg): Unit = {
-    val decryptedMsg = agentActorCommonParam.agentToAgentAPI.authDecrypt(buildAuthDecryptParam(a2aMsg.payload))
-    val typedMsg = agentActorCommonParam.agentToAgentAPI.unpackMsg[AgentTypedMsg, RootJsonFormat[AgentTypedMsg]](decryptedMsg)(Perhaps[RootJsonFormat[AgentTypedMsg]](implicitly))
-    println("### typedMsg: " + typedMsg)
+    val (unpackedMsg, decryptedMsg) = agentToAgentAPI.authDecryptAndUnpack[AgentTypedMsg, RootJsonFormat[AgentTypedMsg]](buildAuthDecryptParam(a2aMsg.payload))(ImplicitParam[RootJsonFormat[AgentTypedMsg]](implicitly))
+    println("### unpackedMsg: " + unpackedMsg)
+    unpackedMsg.`@type` match {
+      case TypeDetail(MSG_TYPE_CREATE_PAIRWISE_KEY, "1.0", _) =>
+        val actualMsg = agentToAgentAPI.unpackMsg[CreatePairwiseKeyReqMsg, RootJsonFormat[CreatePairwiseKeyReqMsg]](decryptedMsg)(ImplicitParam[RootJsonFormat[CreatePairwiseKeyReqMsg]](implicitly))
+        println("### actualMsg: " + actualMsg)
+    }
   }
 
   override val receiveCommand: Receive = {

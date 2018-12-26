@@ -14,7 +14,7 @@ import scala.concurrent.duration.FiniteDuration
 trait RouteSpecCommon extends FlatSpecLike with ScalatestRouteTest with Matchers with BeforeAndAfterAll {
   override def testConfig: Config = AkkaTestBasic.getConfig
 
-  val duration_5_second: FiniteDuration = buildDurationInSeconds(50)
+  val duration_5_second: FiniteDuration = buildDurationInSeconds(500)
 
   implicit def default(implicit system: ActorSystem): RouteTestTimeout = RouteTestTimeout(duration_5_second)
 

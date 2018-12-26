@@ -15,22 +15,22 @@ class NativeToJsonTransformer
     NativeToJsonApplyParam, NativeToJsonApplyResult,
     NativeToJsonUnapplyParam, NativeToJsonUnapplyResult] with TransformationUtilBase {
 
-  override def apply[T, P](param: NativeToJsonApplyParam)(implicit pf: Perhaps[P]=null): NativeToJsonApplyResult = {
-    implicit val rjf: RootJsonFormat[T] = pf.fold[RootJsonFormat[T]] {
-      throw new RuntimeException("required implicit value missing")
+  implicit def getRootJsonFormat[T, P](implicit oi: ImplicitParam[P]): RootJsonFormat[T] = {
+    oi.fold[RootJsonFormat[T]] {
+      throw new RuntimeException("required implicit RootJsonFormat value missing")
     } { implicit ev =>
       ev.asInstanceOf[RootJsonFormat[T]]
     }
+  }
+
+  override def apply[T, P](param: NativeToJsonApplyParam)
+                          (implicit oi: ImplicitParam[P]=null): NativeToJsonApplyResult = {
     val dataT = param.data.asInstanceOf[T]
     NativeToJsonApplyResult(dataT.toJson.toString)
   }
 
-  override def unapply[T, P](param: NativeToJsonUnapplyParam)(implicit pf: Perhaps[P]=null): NativeToJsonUnapplyResult = {
-    implicit val rjf: RootJsonFormat[T] = pf.fold[RootJsonFormat[T]] {
-      throw new RuntimeException("required implicit value missing")
-    } { implicit ev =>
-      ev.asInstanceOf[RootJsonFormat[T]]
-    }
+  override def unapply[T, P](param: NativeToJsonUnapplyParam)
+                            (implicit oi: ImplicitParam[P]=null): NativeToJsonUnapplyResult = {
     NativeToJsonUnapplyResult(param.data.parseJson.convertTo[T])
   }
 }

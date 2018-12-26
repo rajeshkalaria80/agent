@@ -106,7 +106,7 @@ trait TestClientBase extends TestJsonTransformationUtil {
   : T = {
     val param = DecryptParam(KeyInfo(Right(GetVerKeyByDIDParam(decryptFromDID, getKeyFromPool = false))))
     val prm = defaultA2AAPI.authDecrypt(buildAuthDecryptParam(rm))
-    val msg: T = defaultA2AAPI.unpackMsg(prm)(Perhaps(rjf))
+    val msg: T = defaultA2AAPI.unpackMsg(prm)(ImplicitParam(rjf))
     println("### msg: " + msg)
     msg
   }

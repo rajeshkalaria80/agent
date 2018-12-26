@@ -52,41 +52,39 @@ class DefaultTransportParamHttpAkka(val commonParam: CommonParam, val transportM
       HttpEntity(MediaTypes.`application/octet-stream`, a2aMsg.payload)
   }
 
-  class CoreAgentAkkaHttpRoute {
-    lazy val coreAgentRoute: Route = logRequestResult("core-agent-service") {
-      pathPrefix("agent") {
-        path("init") {
-          (post & entity(as[InitAgent])) { ai =>
-            complete {
-              transportMsgRouter.handleMsg(TransportAgnosticMsg(ai)).map[ToResponseMarshallable] {
-                msgResponseHandler
-              }
+  lazy val coreAgentRoute: Route = logRequestResult("core-agent-service") {
+    pathPrefix("agent") {
+      path("init") {
+        (post & entity(as[InitAgent])) { ai =>
+          complete {
+            transportMsgRouter.handleMsg(TransportAgnosticMsg(ai)).map[ToResponseMarshallable] {
+              msgResponseHandler
             }
           }
-        } ~
-          path("msg") {
-            extractRequest { implicit req: HttpRequest =>
-              post {
-                import akka.http.scaladsl.unmarshalling.PredefinedFromEntityUnmarshallers.byteArrayUnmarshaller
-                req.entity.contentType.mediaType match {
-                  case MediaTypes.`application/octet-stream` =>
-                    entity(as[Array[Byte]]) { data =>
-                      complete {
-                        transportMsgRouter.handleMsg(TransportAgnosticMsg(A2AMsg(data))).map[ToResponseMarshallable] {
-                          msgResponseHandler
-                        }
+        }
+      } ~
+        path("msg") {
+          extractRequest { implicit req: HttpRequest =>
+            post {
+              import akka.http.scaladsl.unmarshalling.PredefinedFromEntityUnmarshallers.byteArrayUnmarshaller
+              req.entity.contentType.mediaType match {
+                case MediaTypes.`application/octet-stream` =>
+                  entity(as[Array[Byte]]) { data =>
+                    complete {
+                      transportMsgRouter.handleMsg(TransportAgnosticMsg(A2AMsg(data))).map[ToResponseMarshallable] {
+                        msgResponseHandler
                       }
                     }
-                  case _ => reject
-                }
+                  }
+                case _ => reject
               }
             }
           }
-      }
+        }
     }
   }
 
-  override lazy val route: Route = (new CoreAgentAkkaHttpRoute).coreAgentRoute
+  override lazy val route: Route = coreAgentRoute
 }
 
 
