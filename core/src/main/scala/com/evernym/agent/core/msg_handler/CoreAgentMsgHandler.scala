@@ -1,7 +1,7 @@
 package com.evernym.agent.core.msg_handler
 
 
-import akka.actor.{ActorRef, InvalidActorNameException}
+import akka.actor.ActorRef
 import akka.pattern.ask
 import com.evernym.agent.api.{AgentMsgHandler, CommonParam, RoutingAgent, TransportAgnosticMsg}
 import com.evernym.agent.common.actor.AgentActorCommonParam
@@ -26,8 +26,8 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
   def getTargetActorRef(routeJson: String): ActorRef = {
     val routeDetail = convertJsonToNativeMsg[RouteDetail](routeJson)
     routeDetail.actorTypeId match {
-      case ACTOR_TYPE_USER_AGENT_ACTOR => userAgent
-      case ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR => userAgentPairwise(routeDetail.persistenceId)
+      case ACTOR_TYPE_USER_AGENT_ACTOR => userAgentActorRefReq
+      case ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR => userAgentPairwiseActorRefReq(routeDetail.persistenceId)
     }
   }
 
@@ -67,14 +67,8 @@ class CoreAgentMsgHandler(val agentCommonParam: AgentActorCommonParam)
 
   implicit lazy val param: CommonParam = agentCommonParam.commonParam
 
-  lazy val userAgentActorRef: ActorRef = {
-    try {
-      param.actorSystem.actorOf(UserAgent.props(agentCommonParam), USER_AGENT_ACTOR_NAME)
-    } catch {
-      case e: InvalidActorNameException =>
-        val ar = param.actorSystem.child(USER_AGENT_ACTOR_NAME)
-        userAgent
-    }
+  lazy val userAgentActorRef: ActorRef = userAgentActorRefOpt.getOrElse {
+    param.actorSystem.actorOf(UserAgent.props(agentCommonParam), USER_AGENT_ACTOR_NAME)
   }
 
   def handleMsg(msg: Any): Future[Any] = {

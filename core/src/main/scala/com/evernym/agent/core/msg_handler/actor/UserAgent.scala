@@ -81,7 +81,6 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
   def handleA2AMsg(a2aMsg: A2AMsg): Unit = {
     val (typedMsg, decryptedMsg) = agentToAgentAPI.authDecryptAndUnpack[AgentTypedMsg,
       RootJsonFormat[AgentTypedMsg]](buildAuthDecryptParam(a2aMsg.payload))(implParam[AgentTypedMsg])
-    println("### typedMsg: " + typedMsg)
     typedMsg.`@type` match {
       case TypeDetail(MSG_TYPE_CREATE_PAIRWISE_KEY, "1.0", _) =>
         val actualMsg = agentToAgentAPI.unpackMsg[CreateAgentPairwiseKeyReqMsg,
