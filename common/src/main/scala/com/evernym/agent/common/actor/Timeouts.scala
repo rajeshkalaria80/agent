@@ -1,4 +1,4 @@
-package com.evernym.agent.core.common
+package com.evernym.agent.common.actor
 
 import akka.util.Timeout
 import com.evernym.agent.api.ConfigProvider

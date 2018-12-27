@@ -2,7 +2,7 @@ package com.evernym.agent.core
 
 import com.evernym.agent.common.a2a.{EncryptParam, GetVerKeyByDIDParam, ImplicitParam, KeyInfo}
 import com.evernym.agent.common.actor.AgentDetail
-import com.evernym.agent.core.common.Constants._
+import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.test.client.{DIDDetail, TestClientBase, TestFwdReqMsg, TestTypeDetail}
 import com.evernym.agent.common.wallet.CreateNewKeyParam
 import spray.json.RootJsonFormat

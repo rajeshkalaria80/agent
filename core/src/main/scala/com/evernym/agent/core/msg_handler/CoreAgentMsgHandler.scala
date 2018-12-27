@@ -4,11 +4,9 @@ package com.evernym.agent.core.msg_handler
 import akka.actor.ActorRef
 import akka.pattern.ask
 import com.evernym.agent.api.{AgentMsgHandler, CommonParam, RoutingAgent, TransportAgnosticMsg}
-import com.evernym.agent.common.actor.AgentActorCommonParam
-import com.evernym.agent.core.common.Constants._
-import com.evernym.agent.core.actor.RouteSet
+import com.evernym.agent.common.actor._
+import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.core.msg_handler.actor._
-import com.evernym.agent.core.common.{ActorRefResolver, JsonTransformationUtil, RouteDetail}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global

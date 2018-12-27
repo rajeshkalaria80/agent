@@ -5,12 +5,12 @@ import akka.stream.{ActorMaterializer, Materializer}
 import com.evernym.agent.api._
 import com.evernym.agent.common.a2a.{AgentToAgentAPI, DefaultAgentToAgentAPI}
 import com.evernym.agent.common.actor.AgentActorCommonParam
-import com.evernym.agent.core.msg_handler.{CoreAgentMsgHandler, DefaultRoutingAgent}
-import com.evernym.agent.core.config.DefaultConfigProvider
-import com.evernym.agent.core.common.Constants._
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.evernym.agent.common.wallet.{LibIndyWalletProvider, WalletAPI, WalletConfig}
 import com.evernym.agent.common.util.Util._
+import com.evernym.agent.common.CommonConstants._
+import com.evernym.agent.core.msg_handler.{CoreAgentMsgHandler, DefaultRoutingAgent}
+import com.evernym.agent.core.config.DefaultConfigProvider
 import com.evernym.agent.core.router.DefaultMsgRouter
 import com.evernym.agent.core.transport.http.akka._
 

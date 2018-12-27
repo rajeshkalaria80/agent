@@ -1,18 +1,13 @@
-package com.evernym.agent.core.msg_handler.actor
+package com.evernym.agent.common.actor
 
 import akka.Done
 import akka.actor.Props
 import akka.pattern.ask
-import com.evernym.agent.common.a2a._
-import com.evernym.agent.common.actor._
-import com.evernym.agent.common.util.Util._
 import com.evernym.agent.common.CommonConstants._
-import com.evernym.agent.core.common.Constants._
+import com.evernym.agent.common.a2a._
+import com.evernym.agent.common.util.Util._
 import com.evernym.agent.common.wallet.{CreateNewKeyParam, StoreTheirKeyParam}
-import com.evernym.agent.core.actor._
-import com.evernym.agent.core.common._
 import spray.json.RootJsonFormat
-
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

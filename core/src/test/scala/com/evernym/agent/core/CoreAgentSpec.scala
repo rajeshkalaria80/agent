@@ -6,8 +6,8 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.stream.{ActorMaterializer, Materializer}
 import akka.testkit.TestKit
 import com.evernym.agent.api.ConfigProvider
+import com.evernym.agent.common.actor.{InitAgent, JsonTransformationUtil}
 import com.evernym.agent.common.test.spec.RouteSpecCommon
-import com.evernym.agent.core.common.{InitAgent, JsonTransformationUtil}
 import com.evernym.agent.core.config.DefaultConfigProvider
 
 

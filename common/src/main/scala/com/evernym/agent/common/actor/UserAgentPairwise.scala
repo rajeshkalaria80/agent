@@ -1,15 +1,11 @@
-package com.evernym.agent.core.msg_handler.actor
+package com.evernym.agent.common.actor
 
 import akka.Done
 import akka.actor.Props
-import com.evernym.agent.common.CommonConstants.VERSION_1_0
+import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.a2a.AuthCryptedMsg
-import com.evernym.agent.common.actor._
 import com.evernym.agent.common.util.Util._
-import com.evernym.agent.core.common.Constants._
 import com.evernym.agent.common.wallet.{CreateNewKeyParam, StoreTheirKeyParam}
-import com.evernym.agent.core.actor.{OwnerAgentPairwiseDetailSet, OwnerDIDSet, OwnerPairwiseDIDSet}
-import com.evernym.agent.core.common._
 import spray.json.RootJsonFormat
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -69,7 +65,7 @@ class UserAgentPairwise(val agentActorCommonParam: AgentActorCommonParam)
   }
 
   def handleAuthCryptedMsg(acm: AuthCryptedMsg): Unit = {
-    val (typedMsg, decryptedMsg) = agentToAgentAPI.authDecryptAndUnpack[AgentTypedMsg,
+    val (typedMsg, _) = agentToAgentAPI.authDecryptAndUnpack[AgentTypedMsg,
       RootJsonFormat[AgentTypedMsg]](buildAuthDecryptParam(acm.payload))(implParam[AgentTypedMsg])
 
     typedMsg.`@type` match {

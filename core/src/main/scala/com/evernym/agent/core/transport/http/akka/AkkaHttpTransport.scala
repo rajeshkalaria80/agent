@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
+import com.evernym.agent.common.actor.{InitAgent, JsonTransformationUtil}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.headers._
@@ -13,7 +14,6 @@ import akka.http.scaladsl.server.{Directive0, Route}
 import akka.stream.Materializer
 import com.evernym.agent.api._
 import com.evernym.agent.common.a2a.AuthCryptedMsg
-import com.evernym.agent.core.common.{InitAgent, JsonTransformationUtil}
 
 import scala.concurrent.ExecutionContextExecutor
 

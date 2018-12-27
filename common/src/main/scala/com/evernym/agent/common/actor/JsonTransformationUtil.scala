@@ -1,10 +1,9 @@
-package com.evernym.agent.core.common
+package com.evernym.agent.common.actor
 
 import com.evernym.agent.common.util.TransformationUtilBase
 import com.evernym.agent.common.exception.Exceptions._
 import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.a2a.ImplicitParam
-import Constants._
 import spray.json.RootJsonFormat
 
 

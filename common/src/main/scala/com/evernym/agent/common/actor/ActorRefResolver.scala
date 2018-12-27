@@ -1,9 +1,8 @@
-package com.evernym.agent.core.common
+package com.evernym.agent.common.actor
 
 import akka.actor.{ActorNotFound, ActorRef, ActorSystem}
 import com.evernym.agent.api.{CommonParam, ConfigProvider}
 import com.evernym.agent.common.util.Util.getActorRefFromSelection
-
 
 trait ActorRefResolver extends GeneralTimeout {
 
