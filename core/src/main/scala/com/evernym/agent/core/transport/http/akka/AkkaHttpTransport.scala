@@ -12,8 +12,9 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive0, Route}
 import akka.stream.Materializer
 import com.evernym.agent.api._
-import com.evernym.agent.common.a2a.A2AMsg
-import com.evernym.agent.core.common.{InitAgent, JsonTransformationUtil}
+import com.evernym.agent.common.a2a.AuthCryptedMsg
+import com.evernym.agent.core.common.JsonTransformationUtil
+import com.evernym.agent.core.msg_handler.actor.InitAgent
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -48,7 +49,7 @@ class DefaultTransportParamHttpAkka(val commonParam: CommonParam, val transportM
   implicit val executor: ExecutionContextExecutor = commonParam.actorSystem.dispatcher
 
   def msgResponseHandler: PartialFunction[Any, ToResponseMarshallable] = {
-    case a2aMsg: A2AMsg =>
+    case a2aMsg: AuthCryptedMsg =>
       HttpEntity(MediaTypes.`application/octet-stream`, a2aMsg.payload)
   }
 
@@ -71,7 +72,7 @@ class DefaultTransportParamHttpAkka(val commonParam: CommonParam, val transportM
                 case MediaTypes.`application/octet-stream` =>
                   entity(as[Array[Byte]]) { data =>
                     complete {
-                      transportMsgRouter.handleMsg(TransportAgnosticMsg(A2AMsg(data))).map[ToResponseMarshallable] {
+                      transportMsgRouter.handleMsg(TransportAgnosticMsg(AuthCryptedMsg(data))).map[ToResponseMarshallable] {
                         msgResponseHandler
                       }
                     }

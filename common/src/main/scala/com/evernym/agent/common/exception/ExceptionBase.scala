@@ -2,8 +2,7 @@ package com.evernym.agent.common.exception
 
 trait ExceptionBase {
 
-  abstract class HandledErrorBase(val respCode: String, val respMsg: String,
-                                  val respDetail: Option[Any] = None, val errorDetail: Option[Any] = None)
+  abstract class HandledErrorBase(val respCode: String, val respMsg: String, val errorDetail: Option[Any] = None)
     extends RuntimeException(respMsg) {
 
     override def toString: String = {
@@ -13,9 +12,8 @@ trait ExceptionBase {
     def getErrorMsg: String = errorDetail.map(_.toString).getOrElse(respMsg)
   }
 
-  class HandledError(respCode: String, respMsg: String, respDetail: Option[Any] = None,
-                     errorDetail: Option[Any] = None)
-    extends HandledErrorBase(respCode, respMsg, respDetail, errorDetail)
+  class HandledError(respCode: String, respMsg: String, errorDetail: Option[Any] = None)
+    extends HandledErrorBase(respCode, respMsg, errorDetail)
 
   class BadRequestError(code: String, msg: String, errorDetail: Option[Any] = None)
     extends HandledError(code, msg, errorDetail)

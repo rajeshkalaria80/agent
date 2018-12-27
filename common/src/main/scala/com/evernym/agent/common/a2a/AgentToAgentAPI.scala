@@ -1,10 +1,12 @@
 package com.evernym.agent.common.a2a
 
 
+import java.util
+
 import com.evernym.agent.common.wallet.{WalletAPI, WalletInfo}
 
 
-case class A2AMsg(payload: Array[Byte])
+case class AuthCryptedMsg(payload: Array[Byte])
 
 
 case class PackAndAuthCryptParam(data: Any, encryptParam: EncryptParam, walletInfo: WalletInfo)

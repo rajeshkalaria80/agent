@@ -5,14 +5,11 @@ import com.evernym.agent.common.exception.Exceptions._
 import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.a2a.ImplicitParam
 import com.evernym.agent.core.Constants._
+import com.evernym.agent.core.msg_handler.actor.InitAgent
 import spray.json.RootJsonFormat
 
 
-case class InitAgent(ownerDID: String, ownerDIDVerKey: String)
-
-case class InitAgentForPairwiseKey(ownerPairwiseDID: String, ownerPairwiseDIDVerKey: String, agentId: String)
-
-case class RouteDetail(persistenceId: String, actorTypeId: Int)
+case class RouteDetail(actorTypeId: Int)
 
 trait MsgBase {
 
@@ -55,6 +52,8 @@ case class TypeDetail(name: String, ver: String, fmt: Option[String]=None) exten
   checkOptionalNotEmpty("fmt", fmt)
 }
 
+case class FwdMsg(`@type`: TypeDetail, fwd: String, msg: Array[Byte]) extends ReqMsgBase
+
 case class AgentTypedMsg(`@type`: TypeDetail) extends ReqMsgBase
 
 case class AgentCreatedRespMsg(`@type`: TypeDetail, agentId: String, agentVerKey: String) extends RespMsgBase
@@ -63,33 +62,47 @@ case class CreateAgentPairwiseKeyReqMsg(`@type`: TypeDetail, fromDID: String, fr
 
 case class PairwiseKeyCreatedRespMsg(`@type`: TypeDetail, agentPairwiseId: String, agentPairwiseVerKey: String) extends RespMsgBase
 
+case class GetOwnerAgentDetailReqMsg(`@type`: TypeDetail) extends ReqMsgBase
+
+case class OwnerAgentDetailRespMsg(`@type`: TypeDetail, ownerDID: String, agentId: String) extends RespMsgBase
+
+
 trait JsonTransformationUtil extends TransformationUtilBase {
 
   def implParam[T](implicit rjf: RootJsonFormat[T]): ImplicitParam[RootJsonFormat[T]] = ImplicitParam(rjf)
 
-  implicit val version: String = "1.0"
+  implicit val version: String = VERSION_1_0
 
   private def buildAgentCreatedTypeDetail(ver: String): TypeDetail = TypeDetail(MSG_TYPE_AGENT_CREATED, ver)
 
   private def buildPairwiseKeyCreatedTypeDetail(ver: String): TypeDetail = TypeDetail(MSG_TYPE_PAIRWISE_KEY_CREATED, ver)
 
+  private def buildOwnerAgentDetail(ver: String): TypeDetail = TypeDetail(MSG_TYPE_OWNER_AGENT_DETAIL, ver)
+
   def buildAgentCreatedRespMsg(toDID: String, toDIDVerKey: String)(implicit ver: String): AgentCreatedRespMsg = {
     AgentCreatedRespMsg(buildAgentCreatedTypeDetail(ver), toDID, toDIDVerKey)
   }
 
-  def buildPairwiseKeyCreatedRespMsg(toDID: String, toDIDVerKey: String)(implicit ver: String): PairwiseKeyCreatedRespMsg = {
-    PairwiseKeyCreatedRespMsg(buildPairwiseKeyCreatedTypeDetail(ver), toDID, toDIDVerKey)
+  def buildPairwiseKeyCreatedRespMsg(agentPairwiseId: String, agentPairwiseVerKey: String)(implicit ver: String): PairwiseKeyCreatedRespMsg = {
+    PairwiseKeyCreatedRespMsg(buildPairwiseKeyCreatedTypeDetail(ver), agentPairwiseId, agentPairwiseVerKey)
   }
 
-  implicit val rd: RootJsonFormat[RouteDetail] = jsonFormat2(RouteDetail.apply)
+  def buildOwnerAgentDetailRespMsg(ownerDID: String, agentId: String)(implicit ver: String): OwnerAgentDetailRespMsg = {
+    OwnerAgentDetailRespMsg(buildOwnerAgentDetail(ver), ownerDID, agentId)
+  }
+
+  implicit val rd: RootJsonFormat[RouteDetail] = jsonFormat1(RouteDetail.apply)
   implicit val initAgent: RootJsonFormat[InitAgent] = jsonFormat2(InitAgent.apply)
-  //implicit val agentDetailSet: RootJsonFormat[AgentDetailSet] = jsonFormat2(AgentDetailSet.apply)
 
-  implicit val typeDetailMsg: RootJsonFormat[TypeDetail] = jsonFormat3(TypeDetail.apply)
+  implicit val typeDetail: RootJsonFormat[TypeDetail] = jsonFormat3(TypeDetail.apply)
+  implicit val fwdMsgDetail: RootJsonFormat[FwdMsg] = jsonFormat3(FwdMsg.apply)
 
-  implicit val agentTypedMsg: RootJsonFormat[AgentTypedMsg] = jsonFormat1(AgentTypedMsg.apply)
+  implicit val msgType: RootJsonFormat[AgentTypedMsg] = jsonFormat1(AgentTypedMsg.apply)
   implicit val agentCreatedRespMsg: RootJsonFormat[AgentCreatedRespMsg] = jsonFormat3(AgentCreatedRespMsg.apply)
 
   implicit val createPairwiseKeyReqMsg: RootJsonFormat[CreateAgentPairwiseKeyReqMsg] = jsonFormat3(CreateAgentPairwiseKeyReqMsg.apply)
   implicit val pairwiseKeyCreatedRespMsg: RootJsonFormat[PairwiseKeyCreatedRespMsg] = jsonFormat3(PairwiseKeyCreatedRespMsg.apply)
+
+  implicit val getOwnerAgentDetailReqMsg: RootJsonFormat[GetOwnerAgentDetailReqMsg] = jsonFormat1(GetOwnerAgentDetailReqMsg.apply)
+  implicit val ownerAgentDetailRespMsg: RootJsonFormat[OwnerAgentDetailRespMsg] = jsonFormat3(OwnerAgentDetailRespMsg.apply)
 }

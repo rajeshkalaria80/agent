@@ -23,11 +23,11 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
 
   val routingAgent: ActorRef = param.actorSystem.actorOf(SimpleRoutingAgent.props(param.config))
 
-  def getTargetActorRef(routeJson: String): ActorRef = {
+  def getTargetActorRef(agentId: String, routeJson: String): ActorRef = {
     val routeDetail = convertJsonToNativeMsg[RouteDetail](routeJson)
     routeDetail.actorTypeId match {
-      case ACTOR_TYPE_USER_AGENT_ACTOR => userAgentActorRefReq
-      case ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR => userAgentPairwiseActorRefReq(routeDetail.persistenceId)
+      case ACTOR_TYPE_USER_AGENT_ACTOR => getUserAgentActorRefReq
+      case ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR => getUserAgentPairwiseActorRefReq(agentId)
     }
   }
 
@@ -42,19 +42,19 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
   def getRoute(forId: String): Future[Either[Throwable, String]] = {
     val futResp = routingAgent ? GetRoute(forId)
     futResp map {
-      case r: String => Right(r)
+      case Some(routeJson: String) => Right(routeJson)
       case x => Left(new RuntimeException(s"error while getting route: ${x.toString}"))
     }
   }
 
-  def routeMsgToAgent(toId: String, msg: Any): Future[Either[Throwable, Any]] = {
+  def sendMsgToAgent(toId: String, msg: Any): Future[Either[Throwable, Any]] = {
     getRoute(toId).flatMap {
-      case Right(r: String) =>
-        val actorRef = getTargetActorRef(r)
+      case Right(routeJson: String) =>
+        val actorRef = getTargetActorRef(toId, routeJson)
         val futResp = actorRef ? msg
         futResp map {
           case r: Any => Right(r)
-          case _ => Left(new RuntimeException(s"error while sending msg to route: $r"))
+          case _ => Left(new RuntimeException(s"error while sending msg to route: $routeJson"))
         }
       case x => Future(Left(new RuntimeException(s"error while getting route: ${x.toString}")))
     }

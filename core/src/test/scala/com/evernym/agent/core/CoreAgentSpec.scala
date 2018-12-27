@@ -7,8 +7,9 @@ import akka.stream.{ActorMaterializer, Materializer}
 import akka.testkit.TestKit
 import com.evernym.agent.api.ConfigProvider
 import com.evernym.agent.common.test.spec.RouteSpecCommon
-import com.evernym.agent.core.common.{InitAgent, JsonTransformationUtil}
+import com.evernym.agent.core.common.JsonTransformationUtil
 import com.evernym.agent.core.config.DefaultConfigProvider
+import com.evernym.agent.core.msg_handler.actor.InitAgent
 
 
 object TestPlatform extends TestKit(AkkaTestBasic.system) with Platform {
@@ -32,9 +33,25 @@ class CoreAgentSpec extends RouteSpecCommon with JsonTransformationUtil {
 
   it should "respond to create pairwise key api call" in {
     val (didDetail, req) = testClient.buildCreatePairwiseKeyReq()
-    testClient.buildPostReq("/agent/msg", req) ~> route ~> check {
+    testClient.buildPostAgentMsgReq(req) ~> route ~> check {
       status shouldBe OK
       testClient.handlePairwiseKeyCreatedRespMsg(didDetail.DID, responseAs[Array[Byte]])
+    }
+  }
+
+  it should "respond to get owner agent detail api call" in {
+    val req = testClient.buildGetOwnerAgentDetailReq(testClient.myAgentDetail.id)
+    testClient.buildPostAgentMsgReq(req) ~> route ~> check {
+      status shouldBe OK
+      testClient.handleOwnerAgentDetailRespMsg(responseAs[Array[Byte]])
+    }
+  }
+
+  it should "respond to get owner agent detail for pairwise key api call" in {
+    val req = testClient.buildGetOwnerAgentDetailReq(testClient.pairwiseDIDDetails.head._2.agentPairwiseId)
+    testClient.buildPostAgentMsgReq(req) ~> route ~> check {
+      status shouldBe OK
+      testClient.handleOwnerAgentDetailRespMsg(responseAs[Array[Byte]])
     }
   }
 

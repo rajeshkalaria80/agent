@@ -186,8 +186,8 @@ class WalletAPI (val walletProvider: WalletProvider, ledgerPoolManager: LedgerPo
       } catch {
         case e: ExecutionException =>
           e.getCause match {
-            case _: InvalidStructureException =>
-              throw new BadRequestError(TBR, "invalid encrypted box")
+            case e: InvalidStructureException =>
+              throw new BadRequestError(TBR, "invalid encrypted box", Option(Exceptions.getErrorMsg(e)))
             case _: Throwable => throw new BadRequestError(TBR, "unhandled error while decrypting msg")
           }
         case _: Throwable => throw new BadRequestError(TBR, "unhandled error while decrypting msg")

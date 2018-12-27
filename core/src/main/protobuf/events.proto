@@ -11,18 +11,24 @@ message RouteSet {
     string routeJson = 2;
 }
 
-message OwnerAgentKeyDetailSet {
+message OwnerDIDSet {
     option (scalapb.message).extends = "com.evernym.agent.common.actor.Event";
-    string ownerDID = 1;
-    string ownerDIDVerKey = 2;
-    string agentVerKey = 3;
+    string DID = 1 [(scalapb.field).scala_name = "DID"];
 }
 
-message OwnerAgentPairwiseKeyDetailSet {
+message OwnerAgentDetailSet {
     option (scalapb.message).extends = "com.evernym.agent.common.actor.Event";
-    string ownerDID = 1;
-    string ownerDIDVerKey = 2;
-    string agentId = 3;
-    string agentPairwiseVerKey = 4;
+    string verKey = 1;
+}
+
+message OwnerPairwiseDIDSet {
+    option (scalapb.message).extends = "com.evernym.agent.common.actor.Event";
+    string DID = 1 [(scalapb.field).scala_name = "DID"];
+}
+
+message OwnerAgentPairwiseDetailSet {
+    option (scalapb.message).extends = "com.evernym.agent.common.actor.Event";
+    string agentId = 2;
+    string agentPairwiseVerKey = 5;
 }
 

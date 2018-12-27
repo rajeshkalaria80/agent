@@ -15,4 +15,6 @@ object CommonConstants {
 
   val LEDGER_TXN_PROTOCOL_V1 = 1
   val LEDGER_TXN_PROTOCOL_V2 = 2
+
+  val VERSION_1_0 = "1.0"
 }

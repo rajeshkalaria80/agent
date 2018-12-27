@@ -117,7 +117,7 @@ trait UtilBase {
   def buildDurationInSeconds(seconds: Int): FiniteDuration = Duration.create(seconds, TimeUnit.SECONDS)
 
   def buildRouteJson(actorTypeId: Int): String = {
-    s"""{"actorTypeId":"$actorTypeId"}"""
+    s"""{"actorTypeId":$actorTypeId}"""
   }
 
   def getNewEntityId: String = UUID.randomUUID.toString

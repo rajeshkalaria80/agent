@@ -10,7 +10,7 @@ case class AgentDetail(id: String, verKey: String)
 
 case class OwnerAgentKeyDetail(ownerDID: String, ownerDIDVerKey: String, agentVerKey: String)
 
-case class OwnerAgentPairwiseKeyDetail(ownerDID: String, ownerDIDVerKey: String, agentId: String, agentVerKey: String)
+case class OwnerAgentPairwiseDetail(agentId: String, agentPairwiseVerKey: String)
 
 case class AgentActorCommonParam(commonParam: CommonParam, routingAgent: RoutingAgent,
                                  walletConfig: WalletConfig, walletAPI: WalletAPI, agentToAgentAPI: AgentToAgentAPI)
@@ -23,10 +23,12 @@ trait AgentActorCommon {  this: PersistentActor =>
 
   def agentActorCommonParam: AgentActorCommonParam
   def param: CommonParam = agentActorCommonParam.commonParam
-  def agentVerKeyReq: String
-  def ownerDIDReq: String
-
   def agentToAgentAPI: AgentToAgentAPI = agentActorCommonParam.agentToAgentAPI
+
+  def ownerDIDReq: String
+  def agentVerKeyReq: String
+
+  def throwAgentNotInitializedYet() = throw new RuntimeException("agent not initialized yet")
 
   def buildWalletAccessDetail(actorEntityId: String): WalletAccessDetail = {
     //TODO: shall we keep wallet opened, any risk?

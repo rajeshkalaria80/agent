@@ -2,12 +2,12 @@ package com.evernym.agent.api
 
 import java.io.File
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 
 import scala.concurrent.Future
-
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait ConfigProvider {
 
@@ -35,9 +35,20 @@ case class TransportAgnosticMsg(payload: Any, infoReq: Option[MsgInfoReq] = None
 
 
 trait RoutingAgent {
+
   def setRoute(forId: String, routeJson: String): Future[Either[Throwable, Any]]
-  def getRoute(forId: String): Future[Either[Throwable, Any]]
-  def routeMsgToAgent(toId: String, msg: Any): Future[Either[Throwable, Any]]
+
+  def getRoute(forId: String): Future[Either[Throwable, String]]
+
+  def sendMsgToAgent(toId: String, msg: Any): Future[Either[Throwable, Any]]
+
+  final def fwdMsgToAgent(toId: String, msg: Any, sender: ActorRef): Unit = {
+    val sndr = sender
+    sendMsgToAgent(toId, msg).map {
+      case Right(r: Any) => sndr ! r
+      case Left(e: Throwable) => throw e
+    }
+  }
 }
 
 

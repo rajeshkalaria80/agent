@@ -60,7 +60,7 @@ trait Platform {
   val defaultA2AAPI: AgentToAgentAPI = new DefaultAgentToAgentAPI(walletAPI)
 
   implicit lazy val commonParam: CommonParam = CommonParam(configProvider, system, materializer)
-  val agentCommonParam: AgentActorCommonParam =
+  lazy val agentCommonParam: AgentActorCommonParam =
     AgentActorCommonParam(commonParam, new DefaultRoutingAgent, walletConfig, walletAPI, defaultA2AAPI)
 
   lazy val agentMsgHandler: AgentMsgHandler = new CoreAgentMsgHandler(agentCommonParam)

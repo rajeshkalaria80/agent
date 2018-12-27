@@ -9,6 +9,7 @@ import com.evernym.agent.common.config.ConfigProviderBase
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.evernym.agent.common.util.TransformationUtilBase
 import com.evernym.agent.common.util.Util._
+import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.wallet._
 import spray.json.RootJsonFormat
 
@@ -17,11 +18,14 @@ object TestClientConfigProvider extends ConfigProviderBase
 
 case class TestTypeDetail(name: String, ver: String, fmt: Option[String]=None)
 
+case class TestFwdReqMsg(`@type`: TestTypeDetail, fwd: String, msg: Array[Byte])
+
 trait TestJsonTransformationUtil extends TransformationUtilBase {
 
-  implicit val version: String = "1.0"
+  implicit val version: String = VERSION_1_0
 
-  implicit val typeDetailMsg: RootJsonFormat[TestTypeDetail] = jsonFormat3(TestTypeDetail.apply)
+  implicit val testTypeDetailMsg: RootJsonFormat[TestTypeDetail] = jsonFormat3(TestTypeDetail.apply)
+  implicit val testFwdMsg: RootJsonFormat[TestFwdReqMsg] = jsonFormat3(TestFwdReqMsg.apply)
 
 }
 
@@ -73,8 +77,11 @@ trait TestClientBase extends TestJsonTransformationUtil {
   }
 
   def buildPostReq[T](path: String, payload: Array[Byte]): HttpRequest = {
-    val json = convertNativeMsgToJson(payload)
     buildReq(HttpMethods.POST, path, HttpEntity(MediaTypes.`application/octet-stream`, payload))
+  }
+
+  def buildPostAgentMsgReq[T](payload: Array[Byte]): HttpRequest = {
+    buildReq(HttpMethods.POST, "/agent/msg", HttpEntity(MediaTypes.`application/octet-stream`, payload))
   }
 
   def buildPostReq(path: String, he: RequestEntity = HttpEntity.Empty): HttpRequest =
@@ -103,7 +110,7 @@ trait TestClientBase extends TestJsonTransformationUtil {
     AuthCryptUnapplyParam(data, decryptParam, walletInfo)
   }
 
-  def authDecryptAndUnpackRespMsg[T](rm: Array[Byte], decryptFromDID: String)(implicit rjf: RootJsonFormat[T])
+  def authDecryptAndUnpackRespMsg[T](rm: Array[Byte])(implicit rjf: RootJsonFormat[T])
   : T = {
     val decryptedMsg = defaultA2AAPI.authDecrypt(buildAuthDecryptParam(rm))
     defaultA2AAPI.unpackMsg[T, RootJsonFormat[T]](decryptedMsg)(ImplicitParam(rjf))

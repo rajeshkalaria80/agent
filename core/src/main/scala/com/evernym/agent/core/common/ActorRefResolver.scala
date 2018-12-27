@@ -12,7 +12,7 @@ trait ActorRefResolver extends GeneralTimeout {
   implicit def system: ActorSystem = param.actorSystem
 
   val ACTOR_PATH_PREFIX = "/user"
-  val USER_AGENT_ACTOR_NAME = "UserAgent"
+  val USER_AGENT_ACTOR_NAME = "18566eae-470d-4574-837f-401e1e6dda16"
 
   private var resolvedActorRefs: Map[String, ActorRef] = Map.empty
 
@@ -31,15 +31,17 @@ trait ActorRefResolver extends GeneralTimeout {
 
   private def getActorRefOpt(id: String): Option[ActorRef] = getFromCache(id) orElse resolveAndCache(id)
 
-  private def getActorRefReq(id: String): ActorRef = getActorRefOpt(id).getOrElse(throw new RuntimeException("required actor is not created"))
+  private def getActorRefReq(id: String): ActorRef = {
+    getActorRefOpt(id).getOrElse(throw new RuntimeException("required actor is not created"))
+  }
 
 
   def userAgentActorRefOpt: Option[ActorRef] = getActorRefOpt(USER_AGENT_ACTOR_NAME)
 
   def userAgentPairwiseActorRefOpt(forAgentPairwiseId: String): Option[ActorRef] = getActorRefOpt(forAgentPairwiseId)
 
-  def userAgentActorRefReq: ActorRef = getActorRefReq(USER_AGENT_ACTOR_NAME)
+  def getUserAgentActorRefReq: ActorRef = getActorRefReq(USER_AGENT_ACTOR_NAME)
 
-  def userAgentPairwiseActorRefReq(forAgentPairwiseId: String): ActorRef = getActorRefReq(forAgentPairwiseId)
+  def getUserAgentPairwiseActorRefReq(forAgentPairwiseId: String): ActorRef = getActorRefReq(forAgentPairwiseId)
 
 }
