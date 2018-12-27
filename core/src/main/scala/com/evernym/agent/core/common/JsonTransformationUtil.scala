@@ -4,12 +4,17 @@ import com.evernym.agent.common.util.TransformationUtilBase
 import com.evernym.agent.common.exception.Exceptions._
 import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.a2a.ImplicitParam
-import com.evernym.agent.core.Constants._
-import com.evernym.agent.core.msg_handler.actor.InitAgent
+import Constants._
 import spray.json.RootJsonFormat
 
 
+case class InitAgent(ownerDID: String, ownerDIDVerKey: String)
+
+case class InitAgentForPairwiseKey(ownerDID: String, agentId: String, ownerPairwiseDID: String, ownerPairwiseDIDVerKey: String)
+
 case class RouteDetail(actorTypeId: Int)
+
+//----------------------------
 
 trait MsgBase {
 
@@ -83,7 +88,8 @@ trait JsonTransformationUtil extends TransformationUtilBase {
     AgentCreatedRespMsg(buildAgentCreatedTypeDetail(ver), toDID, toDIDVerKey)
   }
 
-  def buildPairwiseKeyCreatedRespMsg(agentPairwiseId: String, agentPairwiseVerKey: String)(implicit ver: String): PairwiseKeyCreatedRespMsg = {
+  def buildPairwiseKeyCreatedRespMsg(agentPairwiseId: String, agentPairwiseVerKey: String)
+                                    (implicit ver: String): PairwiseKeyCreatedRespMsg = {
     PairwiseKeyCreatedRespMsg(buildPairwiseKeyCreatedTypeDetail(ver), agentPairwiseId, agentPairwiseVerKey)
   }
 

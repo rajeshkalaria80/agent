@@ -13,10 +13,10 @@ import akka.http.scaladsl.server.{Directive0, Route}
 import akka.stream.Materializer
 import com.evernym.agent.api._
 import com.evernym.agent.common.a2a.AuthCryptedMsg
-import com.evernym.agent.core.common.JsonTransformationUtil
-import com.evernym.agent.core.msg_handler.actor.InitAgent
+import com.evernym.agent.core.common.{InitAgent, JsonTransformationUtil}
 
 import scala.concurrent.ExecutionContextExecutor
+
 
 trait CorsSupport {
 

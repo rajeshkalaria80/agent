@@ -6,7 +6,7 @@ import com.evernym.agent.common.CommonConstants.VERSION_1_0
 import com.evernym.agent.common.a2a.AuthCryptedMsg
 import com.evernym.agent.common.actor._
 import com.evernym.agent.common.util.Util._
-import com.evernym.agent.core.Constants._
+import com.evernym.agent.core.common.Constants._
 import com.evernym.agent.common.wallet.{CreateNewKeyParam, StoreTheirKeyParam}
 import com.evernym.agent.core.actor.{OwnerAgentPairwiseDetailSet, OwnerDIDSet, OwnerPairwiseDIDSet}
 import com.evernym.agent.core.common._
@@ -19,8 +19,6 @@ object UserAgentPairwise {
   def props(agentCommonParam: AgentActorCommonParam) = Props(new UserAgentPairwise(agentCommonParam))
 }
 
-case class InitAgentForPairwiseKey(ownerDID: String, agentId: String, ownerPairwiseDID: String, ownerPairwiseDIDVerKey: String)
-
 class UserAgentPairwise(val agentActorCommonParam: AgentActorCommonParam)
   extends PersistentActorBase with AgentActorCommon with JsonTransformationUtil {
 
@@ -30,6 +28,12 @@ class UserAgentPairwise(val agentActorCommonParam: AgentActorCommonParam)
 
   def getRouteJson: String = buildRouteJson(ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR)
 
+  def agentVerKeyReq: String = ownerAgentPairwiseDetail.map(_.agentPairwiseVerKey).getOrElse(throwAgentNotInitializedYet())
+
+  def ownerDIDReq: String = ownerDIDOpt.getOrElse(throwAgentNotInitializedYet())
+
+  def ownerPairwiseDIDReq: String = ownerPairwiseDIDOpt.getOrElse(throwAgentNotInitializedYet())
+
   override val receiveRecover: Receive = {
     case ods: OwnerDIDSet => ownerDIDOpt = Option(ods.DID)
     case opds: OwnerPairwiseDIDSet => ownerPairwiseDIDOpt = Option(opds.DID)
@@ -37,12 +41,6 @@ class UserAgentPairwise(val agentActorCommonParam: AgentActorCommonParam)
       ownerAgentPairwiseDetail = Option(OwnerAgentPairwiseDetail(oapds.agentId, oapds.agentPairwiseVerKey))
       setWalletInfo(buildWalletAccessDetail(oapds.agentId))
   }
-
-  def agentVerKeyReq: String = ownerAgentPairwiseDetail.map(_.agentPairwiseVerKey).getOrElse(throwAgentNotInitializedYet())
-
-  def ownerDIDReq: String = ownerDIDOpt.getOrElse(throwAgentNotInitializedYet())
-
-  def ownerPairwiseDIDReq: String = ownerPairwiseDIDOpt.getOrElse(throwAgentNotInitializedYet())
 
   def initAgentForPairwiseKey(ia: InitAgentForPairwiseKey): Unit = {
     val wad = buildWalletAccessDetail(ia.agentId)

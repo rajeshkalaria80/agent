@@ -5,8 +5,7 @@ import akka.actor.ActorRef
 import akka.pattern.ask
 import com.evernym.agent.api.{AgentMsgHandler, CommonParam, RoutingAgent, TransportAgnosticMsg}
 import com.evernym.agent.common.actor.AgentActorCommonParam
-import com.evernym.agent.common.util.TransformationUtilBase
-import com.evernym.agent.core.Constants._
+import com.evernym.agent.core.common.Constants._
 import com.evernym.agent.core.actor.RouteSet
 import com.evernym.agent.core.msg_handler.actor._
 import com.evernym.agent.core.common.{ActorRefResolver, JsonTransformationUtil, RouteDetail}
@@ -17,7 +16,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class DefaultRoutingAgent(implicit val param: CommonParam)
   extends RoutingAgent
-    with TransformationUtilBase
     with JsonTransformationUtil
     with ActorRefResolver {
 
@@ -31,7 +29,7 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
     }
   }
 
-  def setRoute(forId: String, routeJson: String): Future[Either[Throwable, Any]] = {
+  override def setRoute(forId: String, routeJson: String): Future[Either[Throwable, Any]] = {
     val futResp = routingAgent ? SetRoute(forId, routeJson)
     futResp map {
       case r: RouteSet => Right(r)
@@ -39,7 +37,7 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
     }
   }
 
-  def getRoute(forId: String): Future[Either[Throwable, String]] = {
+  override def getRoute(forId: String): Future[Either[Throwable, String]] = {
     val futResp = routingAgent ? GetRoute(forId)
     futResp map {
       case Some(routeJson: String) => Right(routeJson)
@@ -47,7 +45,7 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
     }
   }
 
-  def sendMsgToAgent(toId: String, msg: Any): Future[Either[Throwable, Any]] = {
+  override def sendMsgToAgent(toId: String, msg: Any): Future[Either[Throwable, Any]] = {
     getRoute(toId).flatMap {
       case Right(routeJson: String) =>
         val actorRef = getTargetActorRef(toId, routeJson)

@@ -15,6 +15,7 @@ case class OwnerAgentPairwiseDetail(agentId: String, agentPairwiseVerKey: String
 case class AgentActorCommonParam(commonParam: CommonParam, routingAgent: RoutingAgent,
                                  walletConfig: WalletConfig, walletAPI: WalletAPI, agentToAgentAPI: AgentToAgentAPI)
 
+
 trait AgentActorCommon {  this: PersistentActor =>
 
   case object GetAgentDetail

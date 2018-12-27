@@ -7,7 +7,7 @@ import com.evernym.agent.common.a2a._
 import com.evernym.agent.common.actor._
 import com.evernym.agent.common.util.Util._
 import com.evernym.agent.common.CommonConstants._
-import com.evernym.agent.core.Constants._
+import com.evernym.agent.core.common.Constants._
 import com.evernym.agent.common.wallet.{CreateNewKeyParam, StoreTheirKeyParam}
 import com.evernym.agent.core.actor._
 import com.evernym.agent.core.common._
@@ -20,8 +20,6 @@ object UserAgent {
   def props(agentCommonParam: AgentActorCommonParam) = Props(new UserAgent(agentCommonParam))
 }
 
-case class InitAgent(ownerDID: String, ownerDIDVerKey: String)
-
 
 class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
   extends PersistentActorBase with AgentActorCommon
@@ -29,7 +27,6 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
 
   var ownerDIDOpt: Option[String] = None
   var agentVerKeyOpt: Option[String] = None
-
   var ownerAgentPairwiseDIDS: Set[String] = Set.empty
 
   def ownerDIDReq: String = ownerDIDOpt.getOrElse(throwAgentNotInitializedYet())

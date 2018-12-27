@@ -1,4 +1,4 @@
-package com.evernym.agent.core
+package com.evernym.agent.core.common
 
 
 object Constants {
