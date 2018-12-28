@@ -11,7 +11,7 @@ import scala.collection.JavaConverters._
 
 trait ConfigProviderBase extends ConfigProvider {
 
-  val config: Config = ConfigFactory.load()
+  def config: Config
 
   private def readReqConfig[T](f: String => T, key: String): T = {
     try {
@@ -63,4 +63,6 @@ trait ConfigProviderBase extends ConfigProvider {
 
 }
 
-object DefaultConfigProvider extends ConfigProviderBase
+object DefaultConfigProvider extends ConfigProviderBase {
+  val config: Config = ConfigFactory.load()
+}

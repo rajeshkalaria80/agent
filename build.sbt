@@ -104,7 +104,6 @@ lazy val coreAgentLibraryDependencies = {
     akkaGrp %% "akka-slf4j" % akka,
 
     //persistence dependencies
-    akkaGrp %% "akka-persistence-cassandra" % "0.91",
     "org.iq80.leveldb" % "leveldb" % "0.10",
 
     //sms (TODO: need to finalize dependencies mentioned in this section)
@@ -229,7 +228,12 @@ lazy val api = (project in file("api")).
     packageSummary := "agent-api",
     libraryDependencies ++= apiLibraryDependencies,
     commonSettings,
-    commonPackageSettings(s"$targetDirPathPrefix")
+    commonPackageSettings(s"$targetDirPathPrefix"),
+    artifact in (assembly) := {
+      val art = (artifact in (assembly)).value
+      art.copy(`classifier` = Some("assembly"))
+    },
+    addArtifact(artifact in (Compile, assembly), assembly)
   )
 
 lazy val common = (project in file("common")).
@@ -238,9 +242,13 @@ lazy val common = (project in file("common")).
     name := "agent-common",
     packageSummary := "agent-common",
     libraryDependencies ++= commonLibraryDependencies,
-    //commonTestSettings("agent-common"),
     commonSettings,
-    commonPackageSettings(s"$targetDirPathPrefix")
+    commonPackageSettings(s"$targetDirPathPrefix"),
+    artifact in (assembly) := {
+      val art = (artifact in (assembly)).value
+      art.copy(`classifier` = Some("assembly"))
+    },
+    addArtifact(artifact in (Compile, assembly), assembly)
   ).dependsOn(api % "test->test; compile->compile")
 
 

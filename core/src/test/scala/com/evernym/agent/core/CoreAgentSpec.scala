@@ -1,19 +1,18 @@
 package com.evernym.agent.core
 
 import akka.http.scaladsl.server.Route
-import com.evernym.agent.common.test.akka.AkkaTestBasic
 import akka.http.scaladsl.model.StatusCodes._
 import akka.stream.{ActorMaterializer, Materializer}
 import akka.testkit.TestKit
+import com.evernym.agent.common.test.akka.AkkaTestBasic
 import com.evernym.agent.api.{CommonParam, ConfigProvider}
 import com.evernym.agent.common.actor.{InitAgent, JsonTransformationUtil}
-import com.evernym.agent.common.config.DefaultConfigProvider
+import com.evernym.agent.common.test.client.TestClientConfigProvider
 import com.evernym.agent.common.test.spec.RouteSpecCommon
 
 
-
 object TestPlatform extends TestKit(AkkaTestBasic.system) {
-  lazy val configProvider: ConfigProvider = DefaultConfigProvider
+  lazy val configProvider: ConfigProvider = TestClientConfigProvider
   implicit lazy val materializer: Materializer = ActorMaterializer()
 
   implicit lazy val commonParam: CommonParam = CommonParam(configProvider, system, materializer)

@@ -5,16 +5,14 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model._
 import com.evernym.agent.api.ConfigProvider
 import com.evernym.agent.common.a2a._
-import com.evernym.agent.common.config.ConfigProviderBase
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.evernym.agent.common.util.TransformationUtilBase
 import com.evernym.agent.common.util.Util._
 import com.evernym.agent.common.CommonConstants._
+import com.evernym.agent.common.config.ConfigProviderBase
 import com.evernym.agent.common.wallet._
+import com.typesafe.config.{Config, ConfigFactory}
 import spray.json.RootJsonFormat
-
-
-object TestClientConfigProvider extends ConfigProviderBase
 
 case class TestTypeDetail(name: String, ver: String, fmt: Option[String]=None)
 
@@ -31,14 +29,18 @@ trait TestJsonTransformationUtil extends TransformationUtilBase {
 
 case class DIDDetail(DID: String, verKey: String)
 
+object TestClientConfigProvider extends ConfigProviderBase {
+  val config: Config = ConfigFactory.load()
+}
+
 trait TestClientBase extends TestJsonTransformationUtil {
 
-  val configProvider: ConfigProvider = TestClientConfigProvider
-  val walletProvider: WalletProvider = new LibIndyWalletProvider(configProvider)
-  val ledgerPoolMngr: LedgerPoolConnManager = new LedgerPoolConnManager(configProvider)
-  val walletAPI: WalletAPI = new WalletAPI(walletProvider, ledgerPoolMngr)
+  lazy val configProvider: ConfigProvider = TestClientConfigProvider
+  lazy val walletProvider: WalletProvider = new LibIndyWalletProvider(configProvider)
+  lazy val ledgerPoolMngr: LedgerPoolConnManager = new LedgerPoolConnManager(configProvider)
+  lazy val walletAPI: WalletAPI = new WalletAPI(walletProvider, ledgerPoolMngr)
 
-  val defaultA2AAPI: AgentToAgentAPI = new DefaultAgentToAgentAPI(walletAPI)
+  lazy val defaultA2AAPI: AgentToAgentAPI = new DefaultAgentToAgentAPI(walletAPI)
 
   var walletAccessDetail: WalletAccessDetail = _
   implicit var walletInfo: WalletInfo = _
