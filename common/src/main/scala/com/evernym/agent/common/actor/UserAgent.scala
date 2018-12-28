@@ -17,8 +17,7 @@ object UserAgent {
 
 
 class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
-  extends PersistentActorBase with AgentActorCommon
-    with JsonTransformationUtil with ActorRefResolver {
+  extends PersistentActorBase with AgentActorCommon with ActorRefResolver {
 
   var ownerDIDOpt: Option[String] = None
   var agentVerKeyOpt: Option[String] = None
@@ -126,8 +125,7 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
 
     case ia: InitAgent => initAgent(ia)
 
-    case acm: AuthCryptedMsg =>
-      handleAuthCryptedMsg(acm)
+    case acm: AuthCryptedMsg => handleAuthCryptedMsg(acm)
 
   }
 }

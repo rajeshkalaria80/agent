@@ -16,7 +16,7 @@ object UserAgentPairwise {
 }
 
 class UserAgentPairwise(val agentActorCommonParam: AgentActorCommonParam)
-  extends PersistentActorBase with AgentActorCommon with JsonTransformationUtil {
+  extends PersistentActorBase with AgentActorCommon {
 
   var ownerDIDOpt: Option[String] = None
   var ownerPairwiseDIDOpt: Option[String] = None

@@ -1,7 +1,7 @@
 package com.evernym.agent.common.actor
 
 import akka.persistence.PersistentActor
-import com.evernym.agent.api.{CommonParam, RoutingAgent}
+import com.evernym.agent.api.{CommonParam, ConfigProvider, RoutingAgent}
 import com.evernym.agent.common.a2a._
 import com.evernym.agent.common.wallet._
 import com.evernym.agent.common.util.Util._
@@ -16,7 +16,7 @@ case class AgentActorCommonParam(commonParam: CommonParam, routingAgent: Routing
                                  walletConfig: WalletConfig, walletAPI: WalletAPI, agentToAgentAPI: AgentToAgentAPI)
 
 
-trait AgentActorCommon {  this: PersistentActor =>
+trait AgentActorCommon extends JsonTransformationUtil {  this: PersistentActor =>
 
   case object GetAgentDetail
 

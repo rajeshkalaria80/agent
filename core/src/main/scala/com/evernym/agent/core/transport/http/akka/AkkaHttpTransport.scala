@@ -53,6 +53,25 @@ class DefaultTransportParamHttpAkka(val commonParam: CommonParam, val transportM
       HttpEntity(MediaTypes.`application/octet-stream`, a2aMsg.payload)
   }
 
+  def handleAgentMsgReq(): Route = {
+    extractRequest { implicit req: HttpRequest =>
+      post {
+        import akka.http.scaladsl.unmarshalling.PredefinedFromEntityUnmarshallers.byteArrayUnmarshaller
+        req.entity.contentType.mediaType match {
+          case MediaTypes.`application/octet-stream` =>
+            entity(as[Array[Byte]]) { data =>
+              complete {
+                transportMsgRouter.handleMsg(TransportAgnosticMsg(AuthCryptedMsg(data))).map[ToResponseMarshallable] {
+                  msgResponseHandler
+                }
+              }
+            }
+          case _ => reject
+        }
+      }
+    }
+  }
+
   lazy val coreAgentRoute: Route = logRequestResult("core-agent-service") {
     pathPrefix("agent") {
       path("init") {
@@ -65,22 +84,7 @@ class DefaultTransportParamHttpAkka(val commonParam: CommonParam, val transportM
         }
       } ~
         path("msg") {
-          extractRequest { implicit req: HttpRequest =>
-            post {
-              import akka.http.scaladsl.unmarshalling.PredefinedFromEntityUnmarshallers.byteArrayUnmarshaller
-              req.entity.contentType.mediaType match {
-                case MediaTypes.`application/octet-stream` =>
-                  entity(as[Array[Byte]]) { data =>
-                    complete {
-                      transportMsgRouter.handleMsg(TransportAgnosticMsg(AuthCryptedMsg(data))).map[ToResponseMarshallable] {
-                        msgResponseHandler
-                      }
-                    }
-                  }
-                case _ => reject
-              }
-            }
-          }
+          handleAgentMsgReq()
         }
     }
   }
