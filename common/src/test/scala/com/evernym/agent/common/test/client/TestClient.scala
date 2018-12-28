@@ -45,6 +45,8 @@ trait TestClientBase extends TestJsonTransformationUtil {
 
   var myDIDDetail: DIDDetail = _
 
+  def agentMsgPath: String
+
   def init(): Unit = {
     val wn = "test-client-00000000000000000000"
     val wc = buildWalletConfig(configProvider)
@@ -81,7 +83,7 @@ trait TestClientBase extends TestJsonTransformationUtil {
   }
 
   def buildPostAgentMsgReq[T](payload: Array[Byte]): HttpRequest = {
-    buildReq(HttpMethods.POST, "/agent/msg", HttpEntity(MediaTypes.`application/octet-stream`, payload))
+    buildReq(HttpMethods.POST, agentMsgPath, HttpEntity(MediaTypes.`application/octet-stream`, payload))
   }
 
   def buildPostReq(path: String, he: RequestEntity = HttpEntity.Empty): HttpRequest =

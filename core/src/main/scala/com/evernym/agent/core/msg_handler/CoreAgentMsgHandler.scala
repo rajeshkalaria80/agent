@@ -6,7 +6,7 @@ import akka.pattern.ask
 import com.evernym.agent.api.{AgentMsgHandler, CommonParam, RoutingAgent, TransportAgnosticMsg}
 import com.evernym.agent.common.actor._
 import com.evernym.agent.common.CommonConstants._
-import com.evernym.agent.core.msg_handler.actor._
+import com.evernym.agent.core.common.Constants._
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,13 +17,15 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
     with JsonTransformationUtil
     with ActorRefResolver {
 
-  val routingAgent: ActorRef = param.actorSystem.actorOf(SimpleRoutingAgent.props(param.config))
+  val ACTOR_PATH_PREFIX = "/user"
+
+  val routingAgent: ActorRef = param.actorSystem.actorOf(SimpleRoutingAgent.props(param.configProvider))
 
   def getTargetActorRef(agentId: String, routeJson: String): ActorRef = {
     val routeDetail = convertJsonToNativeMsg[RouteDetail](routeJson)
     routeDetail.actorTypeId match {
-      case ACTOR_TYPE_USER_AGENT_ACTOR => getUserAgentActorRefReq
-      case ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR => getUserAgentPairwiseActorRefReq(agentId)
+      case ACTOR_TYPE_USER_AGENT_ACTOR | ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR =>
+        agentActorRefReq(agentId, s"$ACTOR_PATH_PREFIX/$agentId")
     }
   }
 
@@ -63,8 +65,10 @@ class CoreAgentMsgHandler(val agentCommonParam: AgentActorCommonParam)
 
   implicit lazy val param: CommonParam = agentCommonParam.commonParam
 
+  def userAgentActorRefOpt: Option[ActorRef] = agentActorRefOpt(USER_AGENT_ID, s"$USER_AGENT_ID/$USER_AGENT_ID")
+
   lazy val userAgentActorRef: ActorRef = userAgentActorRefOpt.getOrElse {
-    param.actorSystem.actorOf(UserAgent.props(agentCommonParam), USER_AGENT_ACTOR_NAME)
+    param.actorSystem.actorOf(UserAgent.props(agentCommonParam), USER_AGENT_ID)
   }
 
   def handleMsg(msg: Any): Future[Any] = {

@@ -33,9 +33,9 @@ trait AgentActorCommon {  this: PersistentActor =>
 
   def buildWalletAccessDetail(actorEntityId: String): WalletAccessDetail = {
     //TODO: shall we keep wallet opened, any risk?
-    val key = generateWalletKey(actorEntityId, agentActorCommonParam.walletAPI, agentActorCommonParam.commonParam.config)
+    val key = generateWalletKey(actorEntityId, agentActorCommonParam.walletAPI, agentActorCommonParam.commonParam.configProvider)
     getWalletAccessDetail(actorEntityId, key, agentActorCommonParam.walletConfig,
-      agentActorCommonParam.commonParam.config).copy(closeAfterUse = false)
+      agentActorCommonParam.commonParam.configProvider).copy(closeAfterUse = false)
   }
 
   def setWalletInfo(wad:  WalletAccessDetail): Unit = {

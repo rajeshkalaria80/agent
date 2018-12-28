@@ -5,23 +5,29 @@ import com.evernym.agent.common.test.akka.AkkaTestBasic
 import akka.http.scaladsl.model.StatusCodes._
 import akka.stream.{ActorMaterializer, Materializer}
 import akka.testkit.TestKit
-import com.evernym.agent.api.ConfigProvider
+import com.evernym.agent.api.{CommonParam, ConfigProvider}
 import com.evernym.agent.common.actor.{InitAgent, JsonTransformationUtil}
+import com.evernym.agent.common.config.DefaultConfigProvider
 import com.evernym.agent.common.test.spec.RouteSpecCommon
-import com.evernym.agent.core.config.DefaultConfigProvider
 
 
 
-object TestPlatform extends TestKit(AkkaTestBasic.system) with Platform {
+object TestPlatform extends TestKit(AkkaTestBasic.system) {
   lazy val configProvider: ConfigProvider = DefaultConfigProvider
   implicit lazy val materializer: Materializer = ActorMaterializer()
+
+  implicit lazy val commonParam: CommonParam = CommonParam(configProvider, system, materializer)
+
+  val platform = new Platform
+
+  def route: Route = platform.akkaHttpTransportRouteParam.route
 }
 
 
 class CoreAgentSpec extends RouteSpecCommon with JsonTransformationUtil {
 
   lazy val testClient = new TestCoreAgentClient()
-  lazy val route: Route = TestPlatform.akkaHttpTransportRouteParam.route
+  lazy val route: Route = TestPlatform.route
 
   it should "respond to init agent api call" in {
     val req = InitAgent(testClient.myDIDDetail.DID, testClient.myDIDDetail.verKey)

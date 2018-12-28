@@ -5,6 +5,7 @@ import java.io.File
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
+import com.typesafe.config.Config
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,6 +21,8 @@ trait ConfigProvider {
   def getConfigStringReq(key: String): String
 
   def getConfigStringOption(key: String): Option[String]
+
+  def getConfigOption(key: String): Option[Config]
 }
 
 //any "required" detail about message
@@ -77,9 +80,9 @@ trait Extension extends MsgHandler {
   def init(inputParam: Option[Any]): Unit
 }
 
-case class CommonParam (config: ConfigProvider,
-                         actorSystem: ActorSystem,
-                         materializer: Materializer)
+case class CommonParam (configProvider: ConfigProvider,
+                        actorSystem: ActorSystem,
+                        materializer: Materializer)
 
 
 trait TransportHttpAkkaRouteParam {

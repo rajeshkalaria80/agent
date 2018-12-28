@@ -1,38 +1,27 @@
 package com.evernym.agent.common
 
+
 object CommonConstants {
 
   val TBR = "TBR"   //to be replaced with correct value
 
-  val EXTENSION_CATEGORY_TRANSPORT_HTTP_AKKA = "extension.transport.http.akka"
-
-  val MSG_ROUTER_EXTENSION = "msg-router"
+  val VERSION_1_0 = "1.0"
 
   val EXT_LOADING_SUCCESSFUL = 1
   val EXT_LOADING_FAILED = 2
-
   val EXT_MANIFEST_FILENAME = "EXT_MANIFEST.MF"
 
   val LEDGER_TXN_PROTOCOL_V1 = 1
   val LEDGER_TXN_PROTOCOL_V2 = 2
 
-  val VERSION_1_0 = "1.0"
-
-  val AGENT_CORE_ACTOR_SYSTEM_NAME = "agent-core"
-
   val ACTOR_TYPE_USER_AGENT_ACTOR = 1
-
   val ACTOR_TYPE_USER_AGENT_PAIRWISE_ACTOR = 2
 
+
   val MSG_TYPE_FWD = "fwd"
-
   val MSG_TYPE_CREATE_PAIRWISE_KEY = "CREATE_PAIRWISE_KEY"
-
   val MSG_TYPE_GET_OWNER_AGENT_DETAIL = "GET_OWNER_AGENT_DETAIL"
-
   val MSG_TYPE_AGENT_CREATED = "AGENT_CREATED"
-
   val MSG_TYPE_PAIRWISE_KEY_CREATED = "PAIRWISE_KEY_CREATED"
-
   val MSG_TYPE_OWNER_AGENT_DETAIL = "OWNER_AGENT_DETAIL"
 }

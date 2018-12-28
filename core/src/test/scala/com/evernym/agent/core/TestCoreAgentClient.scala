@@ -24,6 +24,8 @@ case class TestAgentPairwiseKeyDetail(myPairwiseVerKey: String, agentPairwiseId:
 
 class TestCoreAgentClient extends TestClientBase {
 
+  override val agentMsgPath: String = "/agent/msg"
+
   implicit val testAgentCreatedRespMsg: RootJsonFormat[TestAgentCreatedRespMsg] = jsonFormat3(TestAgentCreatedRespMsg.apply)
 
   implicit val testCreatePairwiseKeyReqMsg: RootJsonFormat[TestCreatePairwiseKeyReqMsg] = jsonFormat3(TestCreatePairwiseKeyReqMsg.apply)

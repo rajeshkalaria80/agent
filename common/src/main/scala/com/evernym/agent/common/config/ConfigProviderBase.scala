@@ -32,6 +32,15 @@ trait ConfigProviderBase extends ConfigProvider {
     }
   }
 
+  def getConfigOption(key: String): Option[Config] = {
+    try {
+      Option(config.getConfig(key))
+    } catch {
+      case _: Missing =>
+        None
+    }
+  }
+
   def getStringSet(path: String): Set[String] = {
     config.getStringList(path).asScala.toSet
   }
@@ -53,3 +62,5 @@ trait ConfigProviderBase extends ConfigProvider {
   }
 
 }
+
+object DefaultConfigProvider extends ConfigProviderBase

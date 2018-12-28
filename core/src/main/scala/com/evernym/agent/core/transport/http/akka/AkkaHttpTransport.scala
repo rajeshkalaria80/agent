@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContextExecutor
 
 trait CorsSupport {
 
-  def config: ConfigProvider
+  def configProvider: ConfigProvider
 
   //this directive adds access control headers to normal responses
   private def addAccessControlHeaders(): Directive0 = {
@@ -95,8 +95,7 @@ class CoreAgentTransportAkkaHttp(val commonParam: CommonParam, val routeParam: T
   implicit val name: String = "akka-http"
   implicit val category: String = "transport"
 
-
-  implicit def config: ConfigProvider = commonParam.config
+  implicit def configProvider: ConfigProvider = commonParam.configProvider
   implicit def system: ActorSystem = commonParam.actorSystem
   implicit def materializer: Materializer = commonParam.materializer
 
