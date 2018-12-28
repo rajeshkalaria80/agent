@@ -62,7 +62,7 @@ case class AgentTypedMsg(`@type`: TypeDetail) extends ReqMsgBase
 
 case class AgentCreatedRespMsg(`@type`: TypeDetail, agentId: String, agentVerKey: String) extends RespMsgBase
 
-case class CreateAgentPairwiseKeyReqMsg(`@type`: TypeDetail, fromDID: String, fromDIDVerKey: String) extends ReqMsgBase
+case class CreateAgentPairwiseKeyReqMsg(`@type`: TypeDetail, forDID: String, forDIDVerKey: String) extends ReqMsgBase
 
 case class PairwiseKeyCreatedRespMsg(`@type`: TypeDetail, agentPairwiseId: String, agentPairwiseVerKey: String) extends RespMsgBase
 

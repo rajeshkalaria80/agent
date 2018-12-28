@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutionException
 
 import com.evernym.agent.common.exception.Exceptions._
 import com.evernym.agent.common.CommonConstants._
-import com.evernym.agent.common.a2a.{DecryptParam, EncryptParam, GetVerKeyByDIDParam}
+import com.evernym.agent.common.a2a._
 import com.evernym.agent.common.exception.Exceptions
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.typesafe.scalalogging.Logger
@@ -37,7 +37,10 @@ case class StoreTheirKeyParam(theirDID: String, theirDIDVerKey: String)
 case class TheirKeyCreated(DID: String, verKey: String)
 
 
-class WalletAPI (val walletProvider: WalletProvider, ledgerPoolManager: LedgerPoolConnManager) {
+trait WalletAPI {
+
+  def walletProvider: WalletProvider
+  def ledgerPoolManager: LedgerPoolConnManager
 
   val logger: Logger = getLoggerByClass(classOf[WalletAPI])
   var wallets: Map[String, WalletExt] = Map.empty
@@ -191,6 +194,30 @@ class WalletAPI (val walletProvider: WalletProvider, ledgerPoolManager: LedgerPo
             case _: Throwable => throw new BadRequestError(TBR, "unhandled error while decrypting msg")
           }
         case _: Throwable => throw new BadRequestError(TBR, "unhandled error while decrypting msg")
+      }
+    })
+  }
+
+  def anonCrypt(keyInfo: KeyInfo, msg: Array[Byte])(implicit walletInfo: WalletInfo): Array[Byte] = {
+    executeOpWithWalletInfo("anon crypt", openWalletIfNotExists=false, { implicit we: WalletExt =>
+      val sealFromVerKey = getVerKeyFromWallet(keyInfo.verKeyDetail)
+      Crypto.anonCrypt(sealFromVerKey, msg).get
+    })
+  }
+
+  def anonDecrypt(keyInfo: KeyInfo, msg: Array[Byte])(implicit walletInfo: WalletInfo): Array[Byte] = {
+    executeOpWithWalletInfo("anon decrypt", openWalletIfNotExists=false, { we: WalletExt =>
+      val decryptFromVerKey = getVerKeyFromWallet(keyInfo.verKeyDetail)(we)
+      try {
+        Crypto.anonDecrypt(we.wallet, decryptFromVerKey, msg).get
+      } catch {
+        case e: ExecutionException =>
+          e.getCause match {
+            case e: InvalidStructureException =>
+              throw new BadRequestError(TBR, "invalid encrypted box", Option(Exceptions.getErrorMsg(e)))
+            case _: Throwable => throw new BadRequestError(TBR, "unhandled error while unsealing msg")
+          }
+        case _: Throwable => throw new BadRequestError(TBR, "unhandled error while unsealing msg")
       }
     })
   }

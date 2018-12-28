@@ -1,7 +1,7 @@
 package com.evernym.agent.common.actor
 
 import akka.persistence.PersistentActor
-import com.evernym.agent.api.{CommonParam, ConfigProvider, RoutingAgent}
+import com.evernym.agent.api.{CommonParam, RoutingAgent}
 import com.evernym.agent.common.a2a._
 import com.evernym.agent.common.wallet._
 import com.evernym.agent.common.util.Util._

@@ -1,6 +1,8 @@
 package com.evernym.agent.common.test.client
 
 
+import java.util.UUID
+
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model._
 import com.evernym.agent.api.ConfigProvider
@@ -38,7 +40,7 @@ trait TestClientBase extends TestJsonTransformationUtil {
   lazy val configProvider: ConfigProvider = TestClientConfigProvider
   lazy val walletProvider: WalletProvider = new LibIndyWalletProvider(configProvider)
   lazy val ledgerPoolMngr: LedgerPoolConnManager = new LedgerPoolConnManager(configProvider)
-  lazy val walletAPI: WalletAPI = new WalletAPI(walletProvider, ledgerPoolMngr)
+  def walletAPI: WalletAPI
 
   lazy val defaultA2AAPI: AgentToAgentAPI = new DefaultAgentToAgentAPI(walletAPI)
 
@@ -50,7 +52,7 @@ trait TestClientBase extends TestJsonTransformationUtil {
   def agentMsgPath: String
 
   def init(): Unit = {
-    val wn = "test-client-00000000000000000000"
+    val wn = UUID.randomUUID().toString.replace("-", "")
     val wc = buildWalletConfig(configProvider)
     val key = walletAPI.generateWalletKey(Option(wn))
 

@@ -61,13 +61,13 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
   def createPairwiseKey(decryptedMsg: Array[Byte]): Unit = {
     val cpkr = agentToAgentAPI.unpackMsg[CreateAgentPairwiseKeyReqMsg,
       RootJsonFormat[CreateAgentPairwiseKeyReqMsg]](decryptedMsg)(implParam[CreateAgentPairwiseKeyReqMsg])
-    if (ownerAgentPairwiseDIDS.contains(cpkr.fromDID)) {
+    if (ownerAgentPairwiseDIDS.contains(cpkr.forDID)) {
       throw new RuntimeException("already added")
     } else {
-      writeAndApply(OwnerPairwiseDIDSet(cpkr.fromDID))
+      writeAndApply(OwnerPairwiseDIDSet(cpkr.forDID))
       val agentPairwiseId = getNewEntityId
       val ar = agentActorCommonParam.commonParam.actorSystem.actorOf(UserAgentPairwise.props(agentActorCommonParam), agentPairwiseId)
-      val iaFut = ar ? InitAgentForPairwiseKey(ownerDIDReq, entityId, cpkr.fromDID, cpkr.fromDIDVerKey)
+      val iaFut = ar ? InitAgentForPairwiseKey(ownerDIDReq, entityId, cpkr.forDID, cpkr.forDIDVerKey)
       val sndr = sender()
       iaFut map {
         case oapds: OwnerAgentPairwiseDetailSet =>

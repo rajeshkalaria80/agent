@@ -1,13 +1,12 @@
 package com.evernym.agent.common.a2a
 
 
-import java.util
-
 import com.evernym.agent.common.wallet.{WalletAPI, WalletInfo}
 
 
 case class AuthCryptedMsg(payload: Array[Byte])
 
+case class AnonCryptedMsg(payload: Array[Byte])
 
 case class PackAndAuthCryptParam(data: Any, encryptParam: EncryptParam, walletInfo: WalletInfo)
 
@@ -17,6 +16,10 @@ trait AgentToAgentAPI {
   def authCrypt(param: AuthCryptApplyParam): Array[Byte]
 
   def authDecrypt(param: AuthCryptUnapplyParam): Array[Byte]
+
+  def anonCrypt(param: AnonCryptApplyParam): Array[Byte]
+
+  def anonDecrypt(param: AnonCryptUnapplyParam): Array[Byte]
 
   def packMsg[T, P](data: T)(implicit oi:  ImplicitParam[P]=null): Array[Byte]
 
@@ -28,6 +31,8 @@ trait AgentToAgentAPI {
 
   def authDecryptAndUnpack[T, P](param: AuthCryptUnapplyParam)(implicit oi:  ImplicitParam[P]=null): (T, Array[Byte])
 
+  def anonDecryptAndUnpack[T, P](param: AnonCryptUnapplyParam)(implicit oi:  ImplicitParam[P]=null): (T, Array[Byte])
+
 }
 
 
@@ -37,14 +42,7 @@ class DefaultAgentToAgentAPI(walletAPI: WalletAPI) extends AgentToAgentAPI {
   private val jsonToMapTransformer = new JsonToMapTransformer()
   private val nativeToJsonTransformer = new NativeToJsonTransformer()
   private val authCryptoTransformer = new AuthCryptoTransformer(walletAPI)
-
-  override def authCrypt(param: AuthCryptApplyParam): Array[Byte] = {
-    applyAuthCryptTransformation(param)
-  }
-
-  override def authDecrypt(param: AuthCryptUnapplyParam): Array[Byte] = {
-    unapplyAuthCryptTransformation(param)
-  }
+  private val anonCryptoTransformer = new AnonCryptoTransformer(walletAPI)
 
   private def applyAuthCryptTransformation[T](param: AuthCryptApplyParam): Array[Byte] = {
     authCryptoTransformer.apply(param).result
@@ -52,6 +50,14 @@ class DefaultAgentToAgentAPI(walletAPI: WalletAPI) extends AgentToAgentAPI {
 
   private def unapplyAuthCryptTransformation[T](param: AuthCryptUnapplyParam): Array[Byte] = {
     authCryptoTransformer.unapply(param).result
+  }
+
+  private def applyAnonCryptTransformation[T](param: AnonCryptApplyParam): Array[Byte] = {
+    anonCryptoTransformer.apply(param).result
+  }
+
+  private def unapplyAnonCryptTransformation[T](param: AnonCryptUnapplyParam): Array[Byte] = {
+    anonCryptoTransformer.unapply(param).result
   }
 
   private def applyMsgPackTransformation[T](data: Map[String, Any]): Array[Byte] = {
@@ -78,6 +84,22 @@ class DefaultAgentToAgentAPI(walletAPI: WalletAPI) extends AgentToAgentAPI {
     nativeToJsonTransformer.unapply[T, P](NativeToJsonUnapplyParam(data)).result.asInstanceOf[T]
   }
 
+  override def authCrypt(param: AuthCryptApplyParam): Array[Byte] = {
+    applyAuthCryptTransformation(param)
+  }
+
+  override def authDecrypt(param: AuthCryptUnapplyParam): Array[Byte] = {
+    unapplyAuthCryptTransformation(param)
+  }
+
+  override def anonCrypt(param: AnonCryptApplyParam): Array[Byte] = {
+    applyAnonCryptTransformation(param)
+  }
+
+  override def anonDecrypt(param: AnonCryptUnapplyParam): Array[Byte] = {
+    unapplyAnonCryptTransformation(param)
+  }
+
   override def packMsg[T, P](data: T)(implicit oi:  ImplicitParam[P]=null): Array[Byte] = {
     val nativeToJsonApplyResult = applyNativeToJsonTransformation(data)
     val jsonToMapApplyResult = applyJsonToMapTransformation(nativeToJsonApplyResult)
@@ -88,6 +110,13 @@ class DefaultAgentToAgentAPI(walletAPI: WalletAPI) extends AgentToAgentAPI {
     val msgPackUnapplyResult = unapplyMsgPackTransformation(data)
     val mapToJsonUnapplyResult = unapplyJsonToMapTransformation(msgPackUnapplyResult)
     unapplyNativeToJsonTransformation[T, P](mapToJsonUnapplyResult)
+  }
+
+  def unpackMsgPartial[T, P](data: Array[Byte])(implicit oi:  ImplicitParam[P]=null): (T, Array[Byte]) = {
+    val msgPackUnapplyResult = unapplyMsgPackTransformation(data)
+    val mapToJsonUnapplyResult = unapplyJsonToMapTransformation(msgPackUnapplyResult)
+    val res = unapplyNativeToJsonTransformation[T, P](mapToJsonUnapplyResult)
+    (res, data)
   }
 
   override def packAndAuthCrypt[T, P](param: PackAndAuthCryptParam)
@@ -102,11 +131,9 @@ class DefaultAgentToAgentAPI(walletAPI: WalletAPI) extends AgentToAgentAPI {
     unpackMsgPartial[T, P](decryptedMsg)
   }
 
-  def unpackMsgPartial[T, P](data: Array[Byte])(implicit oi:  ImplicitParam[P]=null): (T, Array[Byte]) = {
-    val msgPackUnapplyResult = unapplyMsgPackTransformation(data)
-    val mapToJsonUnapplyResult = unapplyJsonToMapTransformation(msgPackUnapplyResult)
-    val res = unapplyNativeToJsonTransformation[T, P](mapToJsonUnapplyResult)
-    (res, data)
+  override def anonDecryptAndUnpack[T, P](param: AnonCryptUnapplyParam)
+                                         (implicit oi:  ImplicitParam[P]=null): (T, Array[Byte]) = {
+    val unsealedMsg = anonDecrypt(param)
+    unpackMsgPartial[T, P](unsealedMsg)
   }
-
 }

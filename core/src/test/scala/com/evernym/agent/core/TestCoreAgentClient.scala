@@ -1,19 +1,17 @@
 package com.evernym.agent.core
 
-import com.evernym.agent.api.ConfigProvider
 import com.evernym.agent.common.a2a.{EncryptParam, GetVerKeyByDIDParam, ImplicitParam, KeyInfo}
 import com.evernym.agent.common.actor.AgentDetail
 import com.evernym.agent.common.CommonConstants._
-import com.evernym.agent.common.config.ConfigProviderBase
 import com.evernym.agent.common.test.client.{DIDDetail, TestClientBase, TestFwdReqMsg, TestTypeDetail}
-import com.evernym.agent.common.wallet.CreateNewKeyParam
-import com.typesafe.config.{Config, ConfigFactory}
+import com.evernym.agent.common.wallet.{CreateNewKeyParam, WalletAPI}
+import com.evernym.agent.core.platform.DefaultWalletAPI
 import spray.json.RootJsonFormat
 
 
 case class TestAgentCreatedRespMsg(`@type`: TestTypeDetail, agentId: String, agentVerKey: String)
 
-case class TestCreatePairwiseKeyReqMsg(`@type`: TestTypeDetail, fromDID: String, fromDIDVerKey: String)
+case class TestCreatePairwiseKeyReqMsg(`@type`: TestTypeDetail, forDID: String, forDIDVerKey: String)
 
 case class TestPairwiseKeyCreatedRespMsg(`@type`: TestTypeDetail, agentPairwiseId: String, agentPairwiseVerKey: String)
 
@@ -27,6 +25,7 @@ case class TestAgentPairwiseKeyDetail(myPairwiseVerKey: String, agentPairwiseId:
 
 class TestCoreAgentClient extends TestClientBase {
 
+  lazy val walletAPI: WalletAPI = new DefaultWalletAPI(walletProvider, ledgerPoolMngr)
   override val agentMsgPath: String = "/agent/msg"
 
   implicit val testAgentCreatedRespMsg: RootJsonFormat[TestAgentCreatedRespMsg] = jsonFormat3(TestAgentCreatedRespMsg.apply)
