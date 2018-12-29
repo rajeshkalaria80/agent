@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class DefaultRoutingAgent(implicit val param: CommonParam)
   extends RoutingAgent
-    with JsonTransformationUtil
+    with AgentJsonTransformationUtil
     with ActorRefResolver {
 
   val ACTOR_PATH_PREFIX = "/user"

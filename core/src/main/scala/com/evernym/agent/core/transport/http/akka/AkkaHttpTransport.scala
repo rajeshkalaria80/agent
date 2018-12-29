@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
-import com.evernym.agent.common.actor.{InitAgent, JsonTransformationUtil}
+import com.evernym.agent.common.actor.{InitAgent, AgentJsonTransformationUtil}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.headers._
@@ -44,7 +44,7 @@ trait CorsSupport {
 }
 
 class DefaultTransportParamHttpAkka(val commonParam: CommonParam, val transportMsgRouter: TransportMsgRouter)
-  extends TransportHttpAkkaRouteParam with JsonTransformationUtil {
+  extends TransportHttpAkkaRouteParam with AgentJsonTransformationUtil {
 
   implicit val executor: ExecutionContextExecutor = commonParam.actorSystem.dispatcher
 

@@ -2,13 +2,15 @@ package com.evernym.agent.common.util
 
 import java.time.ZonedDateTime
 
-import com.evernym.agent.common.CommonConstants.TBR
+import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.exception.Exceptions._
 import com.evernym.agent.common.util.Util._
 import spray.json._
 
 
 trait TransformationUtilBase extends JsonUtilBase {
+
+  implicit val version: String = VERSION_1_0
 
   //NOTE NOTE NOTE:
   //seems order also does matter, so child classes should be declared before the parent case classes (for converting to json)

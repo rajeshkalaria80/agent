@@ -71,11 +71,9 @@ case class GetOwnerAgentDetailReqMsg(`@type`: TypeDetail) extends ReqMsgBase
 case class OwnerAgentDetailRespMsg(`@type`: TypeDetail, ownerDID: String, agentId: String) extends RespMsgBase
 
 
-trait JsonTransformationUtil extends TransformationUtilBase {
+trait AgentJsonTransformationUtil extends TransformationUtilBase {
 
   def implParam[T](implicit rjf: RootJsonFormat[T]): ImplicitParam[RootJsonFormat[T]] = ImplicitParam(rjf)
-
-  implicit val version: String = VERSION_1_0
 
   private def buildAgentCreatedTypeDetail(ver: String): TypeDetail = TypeDetail(MSG_TYPE_AGENT_CREATED, ver)
 

@@ -22,8 +22,6 @@ case class TestFwdReqMsg(`@type`: TestTypeDetail, fwd: String, msg: Array[Byte])
 
 trait TestJsonTransformationUtil extends TransformationUtilBase {
 
-  implicit val version: String = VERSION_1_0
-
   implicit val testTypeDetailMsg: RootJsonFormat[TestTypeDetail] = jsonFormat3(TestTypeDetail.apply)
   implicit val testFwdMsg: RootJsonFormat[TestFwdReqMsg] = jsonFormat3(TestFwdReqMsg.apply)
 

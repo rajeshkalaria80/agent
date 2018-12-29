@@ -86,26 +86,8 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
 
   def handleFwdMsg(decryptedMsg: Array[Byte]): Unit = {
     val fwdMsg = agentToAgentAPI.unpackMsg[FwdMsg, RootJsonFormat[FwdMsg]](decryptedMsg)(implParam[FwdMsg])
+    agentActorCommonParam.routingAgent.fwdMsgToAgent(fwdMsg.fwd, AuthCryptedMsg(fwdMsg.msg), sender)
 
-    if (fwdMsg.fwd == entityId) {
-      handleDecryptedMsg(fwdMsg.msg)
-    } else {
-      agentActorCommonParam.routingAgent.fwdMsgToAgent(fwdMsg.fwd, AuthCryptedMsg(fwdMsg.msg), sender)
-    }
-  }
-
-  def handleDecryptedMsg(decryptedMsg: Array[Byte]): Unit = {
-    val typedMsg = agentToAgentAPI.unpackMsg[AgentTypedMsg,
-      RootJsonFormat[AgentTypedMsg]](decryptedMsg)(implParam[AgentTypedMsg])
-
-    typedMsg.`@type` match {
-
-      case TypeDetail(MSG_TYPE_CREATE_PAIRWISE_KEY, VERSION_1_0, _) => createPairwiseKey(decryptedMsg)
-
-      case TypeDetail(MSG_TYPE_GET_OWNER_AGENT_DETAIL, VERSION_1_0, _) => handleGetOwnerAgentDetail()
-
-      case _ => throw new RuntimeException(s"msg $typedMsg not supported")
-    }
   }
 
   def handleAuthCryptedMsg(acm: AuthCryptedMsg): Unit = {
@@ -115,6 +97,10 @@ class UserAgent (val agentActorCommonParam: AgentActorCommonParam)
     typedMsg.`@type` match {
 
       case TypeDetail(MSG_TYPE_FWD, VERSION_1_0, _) => handleFwdMsg(decryptedMsg)
+
+      case TypeDetail(MSG_TYPE_CREATE_PAIRWISE_KEY, VERSION_1_0, _) => createPairwiseKey(decryptedMsg)
+
+      case TypeDetail(MSG_TYPE_GET_OWNER_AGENT_DETAIL, VERSION_1_0, _) => handleGetOwnerAgentDetail()
 
       case _ => throw new RuntimeException(s"msg $typedMsg not supported")
     }

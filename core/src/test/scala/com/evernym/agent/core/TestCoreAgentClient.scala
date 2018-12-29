@@ -23,7 +23,7 @@ case class TestOwnerAgentDetailRespMsg(`@type`: TestTypeDetail, ownerDID: String
 case class TestAgentPairwiseKeyDetail(myPairwiseVerKey: String, agentPairwiseId: String, agentPairwiseVerKey: String)
 
 
-class TestCoreAgentClient extends TestClientBase {
+trait CoreAgentClient extends TestClientBase {
 
   lazy val walletAPI: WalletAPI = new DefaultWalletAPI(walletProvider, ledgerPoolMngr)
   override val agentMsgPath: String = "/agent/msg"
@@ -37,17 +37,24 @@ class TestCoreAgentClient extends TestClientBase {
   implicit val testOwnerAgentDetailRespMsg: RootJsonFormat[TestOwnerAgentDetailRespMsg] = jsonFormat3(TestOwnerAgentDetailRespMsg.apply)
 
 
-  var myAgentDetail: AgentDetail = _
-  var pairwiseDIDDetails: Map[String, TestAgentPairwiseKeyDetail] = Map.empty
+  var myUserAgentDetail: AgentDetail = _
+  var myUserAgentPairwiseDetails: Map[String, TestAgentPairwiseKeyDetail] = Map.empty
+
+  def getVerKeyForAuthCrypt(agentId: String): String = {
+    val allRecord =
+      Option(myUserAgentDetail).map(r => Map(r.id -> r.verKey)).getOrElse(Map.empty) ++
+        myUserAgentPairwiseDetails.map(r => r._2.agentPairwiseId -> r._2.agentPairwiseVerKey)
+    allRecord(agentId)
+  }
 
   def createNewPairwiseKey(): DIDDetail = {
     val newKey = walletAPI.createNewKey(CreateNewKeyParam())(walletInfo)
     val dd = DIDDetail(newKey.DID, newKey.verKey)
-    pairwiseDIDDetails += dd.DID -> TestAgentPairwiseKeyDetail(dd.verKey, null, null)
+    myUserAgentPairwiseDetails += dd.DID -> TestAgentPairwiseKeyDetail(dd.verKey, null, null)
     dd
   }
 
-  def myAgentVerKey: String = myAgentDetail.verKey
+  def myAgentVerKey: String = myUserAgentDetail.verKey
 
   def encryptParamForAgent: EncryptParam = EncryptParam (
     KeyInfo(Right(GetVerKeyByDIDParam(myDID, getKeyFromPool = false))),
@@ -55,12 +62,12 @@ class TestCoreAgentClient extends TestClientBase {
   )
 
   def setAgentDetail(id: String, verKey: String): Unit = {
-    myAgentDetail = AgentDetail(id, verKey)
+    myUserAgentDetail = AgentDetail(id, verKey)
   }
 
   def setPairwiseAgentDetail(forMyDID: String, agentPairwiseId: String, agentPairwiseVerKey: String): Unit = {
-    pairwiseDIDDetails.get(forMyDID).foreach { r =>
-      pairwiseDIDDetails += forMyDID -> TestAgentPairwiseKeyDetail(r.myPairwiseVerKey, agentPairwiseId, agentPairwiseVerKey)
+    myUserAgentPairwiseDetails.get(forMyDID).foreach { r =>
+      myUserAgentPairwiseDetails += forMyDID -> TestAgentPairwiseKeyDetail(r.myPairwiseVerKey, agentPairwiseId, agentPairwiseVerKey)
     }
   }
 
@@ -70,13 +77,17 @@ class TestCoreAgentClient extends TestClientBase {
     ac
   }
 
+  def buildAuthCryptedMsg(forAgentId: String, origMsg: Array[Byte]): Array[Byte] = {
+    defaultA2AAPI.authCrypt(buildAuthCryptParam(getVerKeyForAuthCrypt(forAgentId), origMsg))
+  }
+
   def buildAuthCryptedFwdMsg(fwdTo: String, origMsg: Array[Byte]): Array[Byte] = {
-    val finalPackedMsg = if (fwdTo == myAgentDetail.id) origMsg else {
-      defaultA2AAPI.authCrypt(buildAuthCryptParam(pairwiseDIDDetails.find(_._2.agentPairwiseId==fwdTo).get._2.agentPairwiseVerKey, origMsg))
+    val finalPackedMsg = if (fwdTo == myUserAgentDetail.id) origMsg else {
+      defaultA2AAPI.authCrypt(buildAuthCryptParam(myUserAgentPairwiseDetails.find(_._2.agentPairwiseId==fwdTo).get._2.agentPairwiseVerKey, origMsg))
     }
     val fwdReqMsg = TestFwdReqMsg(TestTypeDetail(MSG_TYPE_FWD, version), fwdTo, finalPackedMsg)
     val fwdPackedMsg = defaultA2AAPI.packMsg(fwdReqMsg)(ImplicitParam[RootJsonFormat[TestFwdReqMsg]](implicitly))
-    defaultA2AAPI.authCrypt(buildAuthCryptParam(myAgentDetail.verKey, fwdPackedMsg))
+    defaultA2AAPI.authCrypt(buildAuthCryptParam(myUserAgentDetail.verKey, fwdPackedMsg))
   }
 
   def buildCreatePairwiseKeyReq(): (DIDDetail, Array[Byte]) = {
@@ -84,7 +95,7 @@ class TestCoreAgentClient extends TestClientBase {
     val nativeMsg = TestCreatePairwiseKeyReqMsg(
       TestTypeDetail(MSG_TYPE_CREATE_PAIRWISE_KEY, version), DIDDetail.DID, DIDDetail.verKey)
     val packedMsg = defaultA2AAPI.packMsg(nativeMsg)(ImplicitParam[RootJsonFormat[TestCreatePairwiseKeyReqMsg]](implicitly))
-    val req = buildAuthCryptedFwdMsg(myAgentDetail.id, packedMsg)
+    val req = buildAuthCryptedMsg(myUserAgentDetail.id, packedMsg)
     (DIDDetail, req)
   }
 
@@ -97,7 +108,8 @@ class TestCoreAgentClient extends TestClientBase {
   def buildGetOwnerAgentDetailReq(forAgentId: String): Array[Byte] = {
     val nativeMsg = TestGetOwnerAgentDetailReqMsg(TestTypeDetail(MSG_TYPE_GET_OWNER_AGENT_DETAIL, version))
     val packedMsg = defaultA2AAPI.packMsg(nativeMsg)(ImplicitParam[RootJsonFormat[TestGetOwnerAgentDetailReqMsg]](implicitly))
-    val req = buildAuthCryptedFwdMsg(forAgentId, packedMsg)
+    val req = if (forAgentId == myUserAgentDetail.id) buildAuthCryptedMsg(forAgentId, packedMsg)
+    else buildAuthCryptedFwdMsg(forAgentId, packedMsg)
     req
   }
 

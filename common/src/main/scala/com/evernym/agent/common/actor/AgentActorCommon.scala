@@ -16,7 +16,7 @@ case class AgentActorCommonParam(commonParam: CommonParam, routingAgent: Routing
                                  walletConfig: WalletConfig, walletAPI: WalletAPI, agentToAgentAPI: AgentToAgentAPI)
 
 
-trait AgentActorCommon extends JsonTransformationUtil {  this: PersistentActor =>
+trait AgentActorCommon extends AgentJsonTransformationUtil {  this: PersistentActor =>
 
   case object GetAgentDetail
 
@@ -58,5 +58,9 @@ trait AgentActorCommon extends JsonTransformationUtil {  this: PersistentActor =
 
   def buildPackAndAuthCryptParam(data: Any): PackAndAuthCryptParam = {
     PackAndAuthCryptParam(data, getEncryptParam, walletInfo)
+  }
+
+  def buildPackAndAuthCryptParam(data: Any, encryptParam: EncryptParam): PackAndAuthCryptParam = {
+    PackAndAuthCryptParam(data, encryptParam, walletInfo)
   }
 }
