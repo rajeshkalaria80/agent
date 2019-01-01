@@ -51,13 +51,13 @@ class ExtensionManagerSpec extends FreeSpec with Matchers {
       }
     }
 
-    "when sent msg to internal api extension" - {
-      "should get error as it doesn't support any such msg handling" in {
-        intercept[RuntimeException] {
-          internalApiExtDetail.extension.handleMsg(TransportAgnosticMsg("test", Option(MsgInfoReq("1.2.3.4"))))
-        }
-      }
-    }
+//    "when sent msg to internal api extension" - {
+//      "should get error as it doesn't support any such msg handling" in {
+//        intercept[RuntimeException] {
+//          internalApiExtDetail.extension.handleMsg(TransportAgnosticMsg("test", Option(MsgInfoReq("1.2.3.4"))))
+//        }
+//      }
+//    }
 
 //    s"when asked to create extension instance for $extAgencyApiName" - {
 //      "should be able to create instance of that extension" in {

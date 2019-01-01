@@ -9,12 +9,12 @@ case class SetRoute(agentId: String, routeInfo: String)
 case class GetRoute(agentId: String)
 
 
-object SimpleRoutingAgent {
-  def props(configProvider: ConfigProvider) = Props(new SimpleRoutingAgent(configProvider))
+object RoutingTable {
+  def props(configProvider: ConfigProvider) = Props(new RoutingTable(configProvider))
 }
 
 
-class SimpleRoutingAgent(configProvider: ConfigProvider) extends PersistentActorBase {
+class RoutingTable(configProvider: ConfigProvider) extends PersistentActorBase {
 
   var routes: Map[String, String] = Map.empty
 

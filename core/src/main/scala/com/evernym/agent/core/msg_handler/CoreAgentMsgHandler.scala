@@ -12,14 +12,14 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
-class DefaultRoutingAgent(implicit val param: CommonParam)
+class DefaultRoutingAgent(val param: CommonParam)
   extends RoutingAgent
     with AgentJsonTransformationUtil
     with ActorRefResolver {
 
   val ACTOR_PATH_PREFIX = "/user"
 
-  val routingAgent: ActorRef = param.actorSystem.actorOf(SimpleRoutingAgent.props(param.configProvider))
+  val routingTable: ActorRef = param.actorSystem.actorOf(RoutingTable.props(param.configProvider))
 
   def getTargetActorRef(agentId: String, routeJson: String): ActorRef = {
     val routeDetail = convertJsonToNativeMsg[RouteDetail](routeJson)
@@ -30,7 +30,7 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
   }
 
   override def setRoute(forId: String, routeJson: String): Future[Either[Throwable, Any]] = {
-    val futResp = routingAgent ? SetRoute(forId, routeJson)
+    val futResp = routingTable ? SetRoute(forId, routeJson)
     futResp map {
       case r: RouteSet => Right(r)
       case x => Left(new RuntimeException(s"error while setting route: ${x.toString}"))
@@ -38,7 +38,7 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
   }
 
   override def getRoute(forId: String): Future[Either[Throwable, String]] = {
-    val futResp = routingAgent ? GetRoute(forId)
+    val futResp = routingTable ? GetRoute(forId)
     futResp map {
       case Some(routeJson: String) => Right(routeJson)
       case x => Left(new RuntimeException(s"error while getting route: ${x.toString}"))
@@ -59,7 +59,6 @@ class DefaultRoutingAgent(implicit val param: CommonParam)
   }
 }
 
-
 class CoreAgentMsgHandler(val agentCommonParam: AgentActorCommonParam)
   extends AgentMsgHandler with ActorRefResolver {
 
@@ -71,10 +70,8 @@ class CoreAgentMsgHandler(val agentCommonParam: AgentActorCommonParam)
     param.actorSystem.actorOf(UserAgent.props(agentCommonParam), USER_AGENT_ID)
   }
 
-  def handleMsg(msg: Any): Future[Any] = {
-    msg match {
-      case tam: TransportAgnosticMsg => userAgentActorRef ? tam.payload
-    }
+  def handleMsg: PartialFunction[Any, Future[Any]] = {
+    case tam: TransportAgnosticMsg => userAgentActorRef ? tam.payload
   }
 }
 

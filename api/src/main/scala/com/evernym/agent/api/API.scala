@@ -56,13 +56,13 @@ trait RoutingAgent {
 
 
 trait MsgHandler {
-  def handleMsg(msg: Any): Future[Any]
+  def handleMsg: PartialFunction[Any, Future[Any]]
 }
 
 trait AgentMsgHandler extends MsgHandler
 
-trait TransportMsgRouter {
-  def handleMsg(msg: TransportAgnosticMsg): Future[Any]
+trait MsgOrchestrator extends MsgHandler{
+  def msgHandlers: Set[MsgHandler]
 }
 
 trait Transport {

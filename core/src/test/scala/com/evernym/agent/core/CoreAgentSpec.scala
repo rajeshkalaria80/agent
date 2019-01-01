@@ -6,26 +6,27 @@ import akka.stream.{ActorMaterializer, Materializer}
 import akka.testkit.TestKit
 import com.evernym.agent.common.test.akka.AkkaTestBasic
 import com.evernym.agent.api.{CommonParam, ConfigProvider}
-import com.evernym.agent.common.actor.{InitAgent, AgentJsonTransformationUtil}
+import com.evernym.agent.common.actor.{AgentJsonTransformationUtil, InitAgent}
 import com.evernym.agent.common.test.client.TestClientConfigProvider
 import com.evernym.agent.common.test.spec.RouteSpecCommon
+import com.evernym.agent.core.builder.{AgentApp, CoreAgentApp}
+import com.evernym.agent.core.transport.http.akka.CoreAgentTransportAkkaHttp
 
 
-object TestPlatform extends TestKit(AkkaTestBasic.system) {
+object TestCoreAgentApp extends TestKit(AkkaTestBasic.system) {
   lazy val configProvider: ConfigProvider = TestClientConfigProvider
   implicit lazy val materializer: Materializer = ActorMaterializer()
 
   implicit lazy val commonParam: CommonParam = CommonParam(configProvider, system, materializer)
 
-  val platform = new Platform
-
-  def route: Route = platform.akkaHttpTransportRouteParam.route
+  val agentApp: AgentApp = new CoreAgentApp(commonParam)
+  val route: Route = agentApp.transports.head.asInstanceOf[CoreAgentTransportAkkaHttp].routeParam.route
 }
 
 
 class CoreAgentSpec extends RouteSpecCommon with AgentJsonTransformationUtil with CoreAgentClient {
 
-  lazy val route: Route = TestPlatform.route
+  lazy val route: Route = TestCoreAgentApp.route
 
   it should "respond to init agent api call" in {
     val req = InitAgent(myDIDDetail.DID, myDIDDetail.verKey)

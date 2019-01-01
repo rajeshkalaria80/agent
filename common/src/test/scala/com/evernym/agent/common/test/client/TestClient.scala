@@ -51,7 +51,7 @@ trait TestClientBase extends TestJsonTransformationUtil {
 
   def init(): Unit = {
     val wn = UUID.randomUUID().toString.replace("-", "")
-    val wc = buildWalletConfig(configProvider)
+    val wc = createWalletConfig(configProvider)
     val key = walletAPI.generateWalletKey(Option(wn))
 
     walletAccessDetail = WalletAccessDetail(wn, key, wc, closeAfterUse = false)
