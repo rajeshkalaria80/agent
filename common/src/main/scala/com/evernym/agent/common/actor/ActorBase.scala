@@ -22,6 +22,7 @@ trait PersistentActorBase extends ActorBase with PersistentActor { this: Persist
   def apply(evt: Event): Unit = receiveRecover(evt)
 
   def writeAndApply(evt: Event): Unit= {
+    println("evt: " + evt)
     writeWithoutApply(evt)
     apply(evt)
   }

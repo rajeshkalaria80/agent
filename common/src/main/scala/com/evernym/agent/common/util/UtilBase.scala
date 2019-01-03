@@ -111,7 +111,7 @@ trait UtilBase {
     )
 
   def createWalletConfig(configProvider: ConfigProvider): WalletConfig = {
-    val storagePathOpt = configProvider.getConfigStringOption("agent.libindy.wallet.storage-config-path")
+    val storagePathOpt = configProvider.getConfigStringOption("agent.libindy.wallet.storage-path")
     new DefaultWalletConfig(storagePathOpt)
   }
 

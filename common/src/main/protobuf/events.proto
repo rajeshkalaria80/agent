@@ -11,10 +11,10 @@ message TransformedEvent {
     bytes data = 3;
 };
 
-message RouteSet {
+message ValueStored {
     option (scalapb.message).extends = "com.evernym.agent.common.actor.Event";
-    string agentId = 1;
-    string routeJson = 2;
+    string key = 1;
+    string value = 2;
 }
 
 message OwnerDIDSet {

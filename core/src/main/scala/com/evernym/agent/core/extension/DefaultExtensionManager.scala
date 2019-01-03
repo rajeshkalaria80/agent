@@ -79,4 +79,16 @@ class DefaultExtensionManager(configProvider: ConfigProvider)
     }
   }
 
+  def startOptionalExtensionByName(name: String, inputParam: Option[Any]=None): Option[ExtensionDetail] = {
+    getSuccessfullyLoaded.find(_.extension.name == name).map { ed =>
+      ed.extension.start(inputParam)
+      ed
+    }
+  }
+
+  def startRequiredExtensionByName(name: String, inputParam: Option[Any]=None): ExtensionDetail = {
+    startOptionalExtensionByName(name, inputParam).getOrElse {
+      throw new RuntimeException(s"extension with name: '$name' not found/loaded")
+    }
+  }
 }

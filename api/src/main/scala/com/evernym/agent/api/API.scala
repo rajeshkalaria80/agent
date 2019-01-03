@@ -25,16 +25,14 @@ trait ConfigProvider {
   def getConfigOption(key: String): Option[Config]
 }
 
-//any "required" detail about message
-// 'ipAddress' is just an example, we may decide it is not required
-case class MsgInfoReq(ipAddress: String)
+case class MsgInfoOpt(ipAddress: String, transportName: Option[String] = None)
 
-//any "optional" detail about message
-//'endpoint' might not be good example (as it is transport dependent), need to replace it with some good candidate
-case class MsgInfoOpt(endpoint: Option[String] = None)
 
-//TODO: temporarily named it with word "TransportAgnostic", later on we may remove it
-case class TransportAgnosticMsg(payload: Any, infoReq: Option[MsgInfoReq] = None, infoOpt: Option[MsgInfoOpt] = None)
+//TODO: Here 'TransportMsg' means msg with some transport related information
+case class TransportMsg(senderName: String, genericMsg: GenericMsg)
+
+//TODO: Here 'GenericMsg' means msg without any transport specific information, if required rename it appropriately
+case class GenericMsg(payload: Any, infoOpt: Option[MsgInfoOpt] = None)
 
 
 trait RoutingAgent {
@@ -59,16 +57,25 @@ trait MsgHandler {
   def handleMsg: PartialFunction[Any, Future[Any]]
 }
 
-trait AgentMsgHandler extends MsgHandler
+trait Platform extends MsgHandler {
 
-trait MsgOrchestrator extends MsgHandler{
-  def msgHandlers: Set[MsgHandler]
-}
+  def start(inputParam: Option[Any]=None): Unit
 
-trait Transport {
-  def start(): Unit
   def stop(): Unit
+
+  override def handleMsg: PartialFunction[Any, Future[Any]] = {
+    case m => Future.failed(throw new RuntimeException("not supported"))
+  }
 }
+
+trait BusinessPlatform extends Platform {
+  override def stop(): Unit = {}
+}
+
+trait TransportPlatform extends Platform
+
+trait AgentPlatform extends Platform
+
 
 case class MsgType(name: String, version: String)
 
@@ -76,14 +83,13 @@ trait Extension extends MsgHandler {
   def name: String
   def category: String
   def getSupportedMsgTypes: Set[MsgType]
-
-  def init(inputParam: Option[Any]): Unit
+  def start(inputParam: Option[Any]=None): Unit
+  def stop(): Unit
 }
 
-case class CommonParam (configProvider: ConfigProvider,
-                        actorSystem: ActorSystem,
-                        materializer: Materializer)
+case class CommonParam (configProvider: ConfigProvider, actorSystem: ActorSystem, materializer: Materializer)
 
+case class TransportExtensionParam (commonParam: CommonParam, msgHandler: PartialFunction[Any, Future[Any]])
 
 trait TransportHttpAkkaRouteParam {
   def route: Route
@@ -92,6 +98,7 @@ trait TransportHttpAkkaRouteParam {
 trait ExtFileFilterCriteria {
   def filteredFiles(folderPath: String): Set[File]
 }
+
 
 case class ExtensionDetail(extension: Extension, fileAbsolutePath: String)
 case class StatusDetail(code: Int, message: Option[String]=None)

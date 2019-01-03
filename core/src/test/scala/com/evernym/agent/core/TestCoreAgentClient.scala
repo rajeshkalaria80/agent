@@ -4,8 +4,7 @@ import com.evernym.agent.common.a2a.{EncryptParam, GetVerKeyByDIDParam, Implicit
 import com.evernym.agent.common.actor.AgentDetail
 import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.test.client.{DIDDetail, TestClientBase, TestFwdReqMsg, TestTypeDetail}
-import com.evernym.agent.common.wallet.{CreateNewKeyParam, WalletAPI}
-import com.evernym.agent.core.builder.DefaultWalletAPI
+import com.evernym.agent.common.wallet.{CreateNewKeyParam, DefaultWalletAPI, WalletAPI}
 import spray.json.RootJsonFormat
 
 

@@ -4,8 +4,8 @@ import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
 import com.evernym.agent.api._
 import com.evernym.agent.common.config.DefaultConfigProvider
-import com.evernym.agent.core.common.Constants._
-import com.evernym.agent.core.builder.CoreAgentApp
+import Constants._
+import com.evernym.agent.core.platform.agent.CoreAgentPlatform
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -50,8 +50,8 @@ object Main extends App {
 
   lazy val commonParam: CommonParam = CommonParam(configProvider, system, materializer)
 
-  lazy val agentApp = new CoreAgentApp(commonParam)
-  agentApp.run()
+  lazy val coreAgentPlatform = new CoreAgentPlatform(commonParam)
+  coreAgentPlatform.start()
 
 }
 

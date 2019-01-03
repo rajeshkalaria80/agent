@@ -7,17 +7,19 @@ import com.evernym.agent.common.util.Util.getActorRefFromSelection
 
 trait ActorRefResolver extends GeneralTimeout {
 
-  implicit def param: CommonParam
-  implicit def config: ConfigProvider = param.configProvider
-  implicit def system: ActorSystem = param.actorSystem
+  implicit def commonParam: CommonParam
+  implicit def configProvider: ConfigProvider = commonParam.configProvider
+  implicit def actorSystem: ActorSystem = commonParam.actorSystem
 
   private var resolvedActorRefs: Map[String, ActorRef] = Map.empty
 
-  private def getFromCache(id: String): Option[ActorRef] = resolvedActorRefs.get(id)
+  private def getFromCache(id: String): Option[ActorRef] = {
+    resolvedActorRefs.get(id)
+  }
 
   private def resolveAndCache(id: String, path: String): Option[ActorRef] = {
     try {
-      val ar = getActorRefFromSelection(path, system)
+      val ar = getActorRefFromSelection(path, actorSystem)
       resolvedActorRefs += id -> ar
       Option(ar)
     } catch {
@@ -36,5 +38,5 @@ trait ActorRefResolver extends GeneralTimeout {
   def agentActorRefOpt(id: String, path: String): Option[ActorRef] = getActorRefOpt(id, path)
 
   def agentActorRefReq(id: String, path: String): ActorRef = getActorRefReq(id, path)
-
+  
 }

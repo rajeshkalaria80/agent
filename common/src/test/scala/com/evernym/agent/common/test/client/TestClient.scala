@@ -10,7 +10,6 @@ import com.evernym.agent.common.a2a._
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.evernym.agent.common.util.TransformationUtilBase
 import com.evernym.agent.common.util.Util._
-import com.evernym.agent.common.CommonConstants._
 import com.evernym.agent.common.config.ConfigProviderBase
 import com.evernym.agent.common.wallet._
 import com.typesafe.config.{Config, ConfigFactory}
@@ -35,11 +34,11 @@ object TestClientConfigProvider extends ConfigProviderBase {
 
 trait TestClientBase extends TestJsonTransformationUtil {
 
+  def walletAPI: WalletAPI
+
   lazy val configProvider: ConfigProvider = TestClientConfigProvider
   lazy val walletProvider: WalletProvider = new LibIndyWalletProvider(configProvider)
   lazy val ledgerPoolMngr: LedgerPoolConnManager = new LedgerPoolConnManager(configProvider)
-  def walletAPI: WalletAPI
-
   lazy val defaultA2AAPI: AgentToAgentAPI = new DefaultAgentToAgentAPI(walletAPI)
 
   var walletAccessDetail: WalletAccessDetail = _

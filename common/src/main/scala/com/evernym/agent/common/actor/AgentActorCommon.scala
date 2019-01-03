@@ -23,7 +23,7 @@ trait AgentActorCommon extends AgentJsonTransformationUtil {  this: PersistentAc
   implicit var walletInfo: WalletInfo = _
 
   def agentActorCommonParam: AgentActorCommonParam
-  def param: CommonParam = agentActorCommonParam.commonParam
+  def commonParam: CommonParam = agentActorCommonParam.commonParam
   def agentToAgentAPI: AgentToAgentAPI = agentActorCommonParam.agentToAgentAPI
 
   def ownerDIDReq: String

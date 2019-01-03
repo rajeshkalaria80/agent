@@ -223,3 +223,5 @@ trait WalletAPI {
   }
 
 }
+
+class DefaultWalletAPI(val walletProvider: WalletProvider, val ledgerPoolManager: LedgerPoolConnManager) extends WalletAPI
