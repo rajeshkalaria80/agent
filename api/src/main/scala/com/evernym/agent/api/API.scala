@@ -23,6 +23,8 @@ trait ConfigProvider {
   def getConfigStringOption(key: String): Option[String]
 
   def getConfigOption(key: String): Option[Config]
+
+  def getConfig: Config
 }
 
 case class MsgInfoOpt(ipAddress: String, transportName: Option[String] = None)
@@ -57,7 +59,7 @@ trait MsgHandler {
   def handleMsg: PartialFunction[Any, Future[Any]]
 }
 
-trait Platform extends MsgHandler {
+trait Protocol extends MsgHandler {
 
   def start(inputParam: Option[Any]=None): Unit
 
@@ -68,13 +70,13 @@ trait Platform extends MsgHandler {
   }
 }
 
-trait BusinessPlatform extends Platform {
+trait BusinessProtocol extends Protocol {
   override def stop(): Unit = {}
 }
 
-trait TransportPlatform extends Platform
+trait TransportProtocol extends Protocol
 
-trait AgentPlatform extends Platform
+trait AgentOrchestratorProtocol extends Protocol
 
 
 case class MsgType(name: String, version: String)

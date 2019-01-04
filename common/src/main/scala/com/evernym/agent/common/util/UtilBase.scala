@@ -6,9 +6,11 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{ActorRef, ActorSystem}
+import akka.stream.{ActorMaterializer, Materializer}
 import akka.util.Timeout
-import com.evernym.agent.api.ConfigProvider
+import com.evernym.agent.api.{CommonParam, ConfigProvider}
 import com.evernym.agent.common.CommonConstants._
+import com.evernym.agent.common.config.DefaultConfigProvider
 import com.evernym.agent.common.exception.Exceptions.InvalidValue
 import com.evernym.agent.common.wallet.{DefaultWalletConfig, WalletAPI, WalletAccessDetail, WalletConfig}
 import com.typesafe.scalalogging.Logger
@@ -122,6 +124,13 @@ trait UtilBase {
   }
 
   def getNewEntityId: String = UUID.randomUUID.toString
+
+  def buildDefaultCommonParam(actorSystemName: String): CommonParam = {
+    lazy val configProvider: ConfigProvider = DefaultConfigProvider
+    lazy val actorSystem: ActorSystem = ActorSystem(actorSystemName)
+    lazy val materializer: Materializer = ActorMaterializer()(actorSystem)
+    CommonParam(configProvider, actorSystem, materializer)
+  }
 }
 
 object Util extends UtilBase

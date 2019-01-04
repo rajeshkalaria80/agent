@@ -5,7 +5,7 @@ import akka.stream.{ActorMaterializer, Materializer}
 import com.evernym.agent.api._
 import com.evernym.agent.common.config.DefaultConfigProvider
 import Constants._
-import com.evernym.agent.core.platform.agent.CoreAgentPlatform
+import com.evernym.agent.core.protocol.agent.CoreAgentOrchestratorProtocol
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -45,13 +45,13 @@ import com.evernym.agent.core.platform.agent.CoreAgentPlatform
 object Main extends App {
 
   lazy val configProvider: ConfigProvider = DefaultConfigProvider
-  lazy val system: ActorSystem = ActorSystem(CORE_AGENT_ACTOR_SYSTEM_NAME)
-  lazy val materializer: Materializer = ActorMaterializer()(system)
+  lazy val actorSystem: ActorSystem = ActorSystem(CORE_AGENT_ACTOR_SYSTEM_NAME, configProvider.getConfig)
+  lazy val materializer: Materializer = ActorMaterializer()(actorSystem)
 
-  lazy val commonParam: CommonParam = CommonParam(configProvider, system, materializer)
+  lazy val commonParam: CommonParam = CommonParam(configProvider, actorSystem, materializer)
 
-  lazy val coreAgentPlatform = new CoreAgentPlatform(commonParam)
-  coreAgentPlatform.start()
+  lazy val coreAgentOrchestratorProtocol = new CoreAgentOrchestratorProtocol(commonParam)
+  coreAgentOrchestratorProtocol.start()
 
 }
 

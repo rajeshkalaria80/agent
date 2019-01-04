@@ -61,6 +61,7 @@ trait ConfigProviderBase extends ConfigProvider {
     readReqConfig(config.getString, key)
   }
 
+  def getConfig: Config = config
 }
 
 object DefaultConfigProvider extends ConfigProviderBase {
