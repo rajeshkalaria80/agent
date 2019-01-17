@@ -1,6 +1,7 @@
 package com.evernym.agent.api
 
 import java.io.File
+import java.net.URLClassLoader
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Route
@@ -59,7 +60,7 @@ trait MsgHandler {
   def handleMsg: PartialFunction[Any, Future[Any]]
 }
 
-trait Protocol extends MsgHandler {
+trait Component extends MsgHandler {
 
   def start(inputParam: Option[Any]=None): Unit
 
@@ -70,28 +71,29 @@ trait Protocol extends MsgHandler {
   }
 }
 
-trait BusinessProtocol extends Protocol {
+trait BusinessProtocol extends Component {
   override def stop(): Unit = {}
 }
 
-trait TransportProtocol extends Protocol
+trait TransportProtocol extends Component
 
-trait AgentOrchestratorProtocol extends Protocol
+trait AgentOrchestrator extends Component
 
+trait Agent extends Component {
+  def agentOrchestrator: AgentOrchestrator
+}
 
 case class MsgType(name: String, version: String)
 
-trait Extension extends MsgHandler {
+trait Extension extends Component {
   def name: String
   def category: String
   def getSupportedMsgTypes: Set[MsgType]
-  def start(inputParam: Option[Any]=None): Unit
-  def stop(): Unit
 }
 
 case class CommonParam (configProvider: ConfigProvider, actorSystem: ActorSystem, materializer: Materializer)
 
-case class TransportExtensionParam (commonParam: CommonParam, msgHandler: PartialFunction[Any, Future[Any]])
+case class TransportProtocolExtensionParam(commonParam: CommonParam, msgHandler: PartialFunction[Any, Future[Any]])
 
 trait TransportHttpAkkaRouteParam {
   def route: Route
@@ -102,7 +104,13 @@ trait ExtFileFilterCriteria {
 }
 
 
-case class ExtensionDetail(extension: Extension, fileAbsolutePath: String)
+case class ExtensionDetail(extension: Extension, extensionClassLoader:  URLClassLoader, fileAbsolutePath: String) {
+
+  def start(inputParam: Option[Any]=None): Unit = {
+    Thread.currentThread().setContextClassLoader(extensionClassLoader)
+    extension.start(inputParam)
+  }
+}
 case class StatusDetail(code: Int, message: Option[String]=None)
 
 

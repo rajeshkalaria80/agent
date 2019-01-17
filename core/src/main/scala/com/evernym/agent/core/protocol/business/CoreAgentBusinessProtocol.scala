@@ -2,12 +2,12 @@ package com.evernym.agent.core.protocol.business
 
 import akka.actor.ActorRef
 import akka.pattern.ask
-import com.evernym.agent.api._
+import com.evernym.agent.api.{BusinessProtocol, CommonParam, TransportMsg}
 import com.evernym.agent.common.a2a.{AgentToAgentAPI, DefaultAgentToAgentAPI}
-import com.evernym.agent.common.actor._
+import com.evernym.agent.common.actor.{ActorRefResolver, AgentActorCommonParam, UserAgent}
+import com.evernym.agent.common.util.Util._
 import com.evernym.agent.common.libindy.LedgerPoolConnManager
 import com.evernym.agent.common.router.BasicRoutingAgent
-import com.evernym.agent.common.util.Util.createWalletConfig
 import com.evernym.agent.common.wallet.{DefaultWalletAPI, LibIndyWalletProvider, WalletAPI, WalletConfig}
 import com.evernym.agent.core.Constants._
 
@@ -36,6 +36,5 @@ class CoreAgentBusinessProtocol(val commonParam: CommonParam) extends BusinessPr
   override def start(inputParam: Option[Any]=None): Unit = {
     userAgentActorRef
   }
+
 }
-
-

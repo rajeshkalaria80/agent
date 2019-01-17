@@ -44,7 +44,6 @@ class DefaultExtensionManager(configProvider: ConfigProvider)
     val dirPaths = dirPathsOpt.getOrElse(configProvider.getStringSet("agent.extensions.load-paths"))
     val filter = filterOpt.getOrElse(new DefaultExtFileFilter(configProvider))
     val classLoader = getClass.getClassLoader
-
     dirPaths.foreach { dirPath =>
       try {
         filter.filteredFiles(dirPath).foreach { extFile =>
@@ -53,15 +52,15 @@ class DefaultExtensionManager(configProvider: ConfigProvider)
             Option(urlClassLoader.findResource(EXT_MANIFEST_FILENAME)) match {
               case Some(mr: URL) =>
                 val manifest: Manifest = new Manifest(mr.openStream())
-                val extWrapperClasspath = manifest.getMainAttributes.getValue("ext-class")
+                val extClass = manifest.getMainAttributes.getValue("ext-class")
                 //TODO: need to remove the deprecated warning in below line
-                val extWrapper = urlClassLoader.loadClass(extWrapperClasspath).newInstance().asInstanceOf[Extension]
-                getExtOption(extWrapper.name) match {
+                val extension = urlClassLoader.loadClass(extClass).newInstance().asInstanceOf[Extension]
+                getExtOption(extension.name) match {
                   case Some(ed: ExtensionDetail) =>
                     addToErrors(s"file: ${extFile.getAbsolutePath}, detail: extension name " +
-                      s"'${extWrapper.name}' already used by extension loaded from file '${ed.fileAbsolutePath}'")
+                      s"'${extension.name}' already used by extension loaded from file '${ed.fileAbsolutePath}'")
                   case None =>
-                    loaded += ExtensionDetail(extWrapper, extFile.getAbsolutePath)
+                    loaded += ExtensionDetail(extension, urlClassLoader, extFile.getAbsolutePath)
                 }
               case None =>
                 addToErrors(s"file: ${extFile.getAbsolutePath}, detail: manifest file '$EXT_MANIFEST_FILENAME' not found")

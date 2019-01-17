@@ -25,7 +25,7 @@ trait AkkaTestCommon {
       }
 
       actor {
-        provider = "local"
+        provider = "akka.cluster.ClusterActorRefProvider"
       }
 
       remote {

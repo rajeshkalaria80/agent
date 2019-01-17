@@ -5,7 +5,6 @@ import akka.stream.{ActorMaterializer, Materializer}
 import com.evernym.agent.api._
 import com.evernym.agent.common.config.DefaultConfigProvider
 import Constants._
-import com.evernym.agent.core.protocol.agent.CoreAgentOrchestratorProtocol
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -22,9 +21,9 @@ import com.evernym.agent.core.protocol.agent.CoreAgentOrchestratorProtocol
 
                               ////////////////////         ////////////////////
                               //                //         //                //
-                              //      MSG       //         //    AGENCY      //
-                              //  ORCHESTRATOR  //         //     MSG        //
-                              //                //         //    HANDLER     //
+                              //                //         //    AGENCY      //
+                              //     CORE       //         //     MSG        //
+                              //     AGENT      //         //    HANDLER     //
                               //                //         //                //
                               ////////////////////         ////////////////////
 
@@ -50,8 +49,8 @@ object Main extends App {
 
   lazy val commonParam: CommonParam = CommonParam(configProvider, actorSystem, materializer)
 
-  lazy val coreAgentOrchestratorProtocol = new CoreAgentOrchestratorProtocol(commonParam)
-  coreAgentOrchestratorProtocol.start()
+  lazy val coreAgentApp = new CoreAgent(commonParam)
+  coreAgentApp.start()
 
 }
 

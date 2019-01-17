@@ -15,12 +15,13 @@ trait RoutingAgentBase
     with AgentJsonTransformationUtil
     with GeneralTimeout {
 
+  def actorName: String
   def commonParam: CommonParam
 
-  val ACTOR_PATH_PREFIX = "/user"
+  lazy val ACTOR_PATH_PREFIX = "/user"
 
-  val routingTable: ActorRef = commonParam.actorSystem.actorOf(
-    KeyValueStore.props(commonParam.configProvider), "routing-table")
+  lazy val routingTable: ActorRef = commonParam.actorSystem.actorOf(
+    KeyValueStore.props(commonParam.configProvider), actorName)
 
   def buildTargetActorRef(forId: String, routeDetail: RouteDetail): ActorRef
 
@@ -62,6 +63,8 @@ trait RoutingAgentBase
 class BasicRoutingAgent(val commonParam: CommonParam)
   extends RoutingAgentBase
   with ActorRefResolver {
+
+  override val actorName: String = "core-agent-routing-table"
 
   override def buildTargetActorRef(forId: String, routeDetail: RouteDetail): ActorRef = {
     routeDetail.actorTypeId match {
