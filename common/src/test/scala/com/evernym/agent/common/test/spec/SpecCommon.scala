@@ -12,9 +12,7 @@ trait SpecCommon extends BeforeAndAfterAll with Matchers { this: Suite =>
 
   val duration_5_second: FiniteDuration = buildDurationInSeconds(5)
 
-  override def beforeAll(): Unit = {
-    deleteTestStorage()
-  }
+  override def beforeAll(): Unit = deleteTestStorage()
 
   def deleteTestStorage(): Unit = {
     try {
@@ -26,4 +24,5 @@ trait SpecCommon extends BeforeAndAfterAll with Matchers { this: Suite =>
         println("error occurred during deleting indy client directory...: " + e.getMessage)
     }
   }
+
 }
