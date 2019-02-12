@@ -7,6 +7,7 @@ import scala.concurrent.Future
 
 
 class CoreAgent(val commonParam: CommonParam) extends Agent {
+
   lazy val agentOrchestrator: AgentOrchestrator = new CoreAgentOrchestrator(commonParam)
 
   override def handleMsg: PartialFunction[Any, Future[Any]] = {

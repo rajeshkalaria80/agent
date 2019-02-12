@@ -2,8 +2,7 @@ package com.evernym.agent.core.protocol.agent
 
 
 import com.evernym.agent.api._
-import com.evernym.agent.common.actor._
-import com.evernym.agent.core.extension.DefaultExtensionManager
+import com.evernym.agent.common.extension.DefaultExtensionManager
 import com.evernym.agent.core.protocol.business.CoreAgentBusinessProtocol
 import com.evernym.agent.core.protocol.transport.{CoreAgentTransportProtocol, DefaultTransportParamHttpAkka}
 import com.evernym.agent.core.Constants._
@@ -11,11 +10,11 @@ import com.evernym.agent.core.Constants._
 import scala.concurrent.Future
 
 
-class CoreAgentOrchestrator(val commonParam: CommonParam) extends AgentOrchestrator with ActorRefResolver {
+class CoreAgentOrchestrator(val commonParam: CommonParam) extends AgentOrchestrator {
 
   lazy val extensionManager = new DefaultExtensionManager(commonParam.configProvider)
   var extensions: Set[Extension] = Set.empty
-  var protocols: Set[Component] = Set.empty
+  var protocols: Set[Protocol] = Set.empty
   var coreAgentBusinessProtocol: BusinessProtocol = _
 
   private def startCoreAgentTransportProtocol(): Unit = {

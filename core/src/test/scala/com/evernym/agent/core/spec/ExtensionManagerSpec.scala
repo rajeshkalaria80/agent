@@ -4,8 +4,8 @@ import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
 import com.evernym.agent.api._
 import com.evernym.agent.common.config.DefaultConfigProvider
+import com.evernym.agent.common.extension.{DefaultExtFileFilter, DefaultExtensionManager}
 import com.evernym.agent.core.Constants._
-import com.evernym.agent.core.extension.{DefaultExtFileFilter, DefaultExtensionManager}
 import org.scalatest.{FreeSpec, Matchers}
 
 
@@ -39,38 +39,8 @@ class ExtensionManagerSpec extends FreeSpec with Matchers {
       "should be able to load it successfully" in {
         extManager.load(extDirPathsOpt, extFilterOpt)
         extManager.getErrors shouldBe Set.empty
-        extManager.getSuccessfullyLoaded.map(_.extension.name) shouldBe
-          Set(agencyBusinessProtocolExtName, agencyTransportProtocolExtName)
-      }
-    }
-
-//    s"when asked to create extension instance for $agencyInternalApiTransportProtocolExtName" - {
-//      "should be able to create instance of that extension" in {
-//        val extParam: Option[CommonParam] = Option(CommonParam(config, actorSystem, materializer))
-//        internalApiExtDetail = extManager.getExtReq(agencyInternalApiTransportProtocolExtName)
-//        internalApiExtDetail.extension.start(extParam)
-//        internalApiExtDetail.extension.name shouldBe agencyInternalApiTransportProtocolExtName
-//        internalApiExtDetail.extension.category shouldBe "transport-protocol"
-//      }
-//    }
-
-    "when sent msg to internal api extension" - {
-      "should get error as it doesn't support any such msg handling" in {
-        intercept[RuntimeException] {
-          internalApiExtDetail.extension.handleMsg(GenericMsg("test"))
-        }
-      }
-    }
-
-    s"when asked to create extension instance for $agencyBusinessProtocolExtName" - {
-      "should be able to create instance of that extension" in {
-        val extParam: Option[CommonParam] = Option(CommonParam(config, actorSystem, materializer))
-        agencyApiExtDetail = extManager.getExtReq(agencyBusinessProtocolExtName)
-        agencyApiExtDetail.start(extParam)
-        agencyApiExtDetail.extension.name shouldBe agencyBusinessProtocolExtName
-        agencyApiExtDetail.extension.category shouldBe "business-protocol"
+        extManager.getSuccessfullyLoaded.map(_.extension.name) shouldBe Set.empty
       }
     }
   }
-
 }

@@ -60,7 +60,7 @@ lazy val apiLibraryDependencies = {
   val coreDeps = Seq.apply(
     akkaGrp %% "akka-actor" % akka,
     akkaGrp %% "akka-stream" % akka,
-    akkaGrp %% "akka-cluster-sharding" % akka, //TODO: this dependency is not directly needed by a core agent, it is temporary to make few things working
+    //akkaGrp %% "akka-cluster-sharding" % akka, //TODO: this dependency is not directly needed by a core agent, it is temporary to make few things working
     akkaGrp %% "akka-http" % akka_http
   )
   coreDeps

@@ -71,11 +71,13 @@ trait Component extends MsgHandler {
   }
 }
 
-trait BusinessProtocol extends Component {
+trait Protocol extends Component
+
+trait BusinessProtocol extends Protocol {
   override def stop(): Unit = {}
 }
 
-trait TransportProtocol extends Component
+trait TransportProtocol extends Protocol
 
 trait AgentOrchestrator extends Component
 
